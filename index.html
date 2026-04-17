@@ -467,7 +467,7 @@ tbody tr:hover td{background:#FAFBFC}
         <div class="sec-title">룸타입 설정</div>
         <div class="sec-sub">휴양소 룸타입을 등록하고 최대 인원을 설정하세요.</div>
         <div style="margin-bottom:16px">
-          <button class="btn btn-primary" onclick="openModal('modal-room')">
+          <button class="btn btn-primary" onclick="openAddRoom()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             룸타입 추가
           </button>
@@ -541,7 +541,7 @@ tbody tr:hover td{background:#FAFBFC}
 <div class="modal-bg" id="modal-room">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-head-title">룸타입 추가</div>
+      <div class="modal-head-title" id="modal-room-title">룸타입 추가</div>
       <button class="modal-close" onclick="closeModal('modal-room')">✕</button>
     </div>
     <div class="modal-body">
@@ -581,7 +581,7 @@ tbody tr:hover td{background:#FAFBFC}
     </div>
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal('modal-room')">취소</button>
-      <button class="btn btn-primary" onclick="addRoom()">추가하기</button>
+      <button class="btn btn-primary" id="modal-room-save-btn" onclick="addRoom()">추가하기</button>
     </div>
   </div>
 </div>
@@ -633,6 +633,7 @@ var APPLICANTS=[
   {eno:'78901',name:'오민서',date:'8월 4일',room:'스탠다드룸',fam:1,at:'07.30 09:00',status:'selected',rank:'—'},
 ];
 var curFilter='all';
+var editingRoomId=null;
 
 var STATUS_MAP={
   selected:'<span class="chip chip-blue">당첨</span>',
@@ -689,7 +690,7 @@ function renderRooms(){
       '<div style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:#EBF3FF;color:#1B64DA;margin-bottom:8px"><span style="width:6px;height:6px;border-radius:50%;background:#3182F6;display:inline-block;flex-shrink:0"></span>구좌 '+r.slots+'개</div>'+
       '<div class="room-card-meta">최대 '+r.cap+'명'+(r.note?' · '+r.note:'')+'</div>'+
       '<div class="room-card-actions">'+
-        '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px">수정</button>'+
+        '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editRoom('+r.id+')">수정</button>'+
         '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px" onclick="deleteRoom('+r.id+')">삭제</button>'+
       '</div>';
     g.appendChild(d);
@@ -722,6 +723,50 @@ function addRoom(){
   document.getElementById('room-cap').value='';
   document.getElementById('room-slots').value='';
   document.getElementById('room-note').value='';
+}
+function openAddRoom(){
+  editingRoomId=null;
+  document.getElementById('modal-room-title').textContent='룸타입 추가';
+  document.getElementById('modal-room-save-btn').textContent='추가하기';
+  document.getElementById('modal-room-save-btn').onclick=addRoom;
+  document.getElementById('room-name').value='';
+  document.getElementById('room-slots').value='';
+  document.getElementById('room-cap').value='';
+  document.getElementById('room-color').value='blue';
+  document.getElementById('room-infant-no').checked=true;
+  document.getElementById('room-note').value='';
+  openModal('modal-room');
+}
+function editRoom(id){
+  var r=ROOMS.find(function(x){return x.id===id});
+  if(!r)return;
+  editingRoomId=id;
+  document.getElementById('modal-room-title').textContent='룸타입 수정';
+  document.getElementById('modal-room-save-btn').textContent='저장하기';
+  document.getElementById('modal-room-save-btn').onclick=saveRoom;
+  document.getElementById('room-name').value=r.name;
+  document.getElementById('room-slots').value=r.slots;
+  document.getElementById('room-cap').value=r.cap;
+  document.getElementById('room-color').value=r.color||'blue';
+  if(r.infant==='possible'){document.getElementById('room-infant-ok').checked=true;}
+  else{document.getElementById('room-infant-no').checked=true;}
+  document.getElementById('room-note').value=r.note||'';
+  openModal('modal-room');
+}
+function saveRoom(){
+  var name=document.getElementById('room-name').value.trim();
+  var cap=parseInt(document.getElementById('room-cap').value)||0;
+  var slots=parseInt(document.getElementById('room-slots').value)||0;
+  var color=document.getElementById('room-color').value;
+  var infant=document.querySelector('input[name="room-infant"]:checked');
+  var infantVal=infant?infant.value:'impossible';
+  var note=document.getElementById('room-note').value.trim();
+  if(!name||!cap||!slots){alert('이름, 최대 인원, 구좌 수를 입력해 주세요.');return;}
+  var idx=ROOMS.findIndex(function(x){return x.id===editingRoomId});
+  if(idx===-1)return;
+  ROOMS[idx]=Object.assign({},ROOMS[idx],{name:name,cap:cap,slots:slots,color:color,infant:infantVal,note:note});
+  closeModal('modal-room');
+  renderRooms();
 }
 function deleteRoom(id){
   if(!confirm('삭제하시겠습니까?'))return;
