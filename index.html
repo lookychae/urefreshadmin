@@ -615,26 +615,41 @@ tbody tr:hover td{background:#FAFBFC}
 
 <script>
 // ── DATA ──
-var ROOMS=[
-  {id:1,name:'스탠다드룸',minPeople:1,cap:4,slots:10,color:'blue',infantMonth:24,toddlerMonth:84,note:''},
-  {id:2,name:'패밀리룸',minPeople:2,cap:8,slots:5,color:'green',infantMonth:24,toddlerMonth:84,note:'넓은 거실 포함'},
-  {id:3,name:'디럭스룸',minPeople:1,cap:6,slots:5,color:'orange',infantMonth:24,toddlerMonth:84,note:'오션뷰 제공'},
+var DEFAULT_ROOMS=[
+  {id:1,name:'스탠다드룸',cap:4,slots:10,color:'blue',infant:'impossible',note:''},
+  {id:2,name:'패밀리룸',cap:8,slots:5,color:'green',infant:'impossible',note:'넓은 거실 포함'},
+  {id:3,name:'디럭스룸',cap:6,slots:5,color:'orange',infant:'impossible',note:'오션뷰 제공'},
 ];
-var SCHEDULES=[
-  {date:'2025-08-04',day:'월',room:'스탠다드룸',cap:4,minPeople:1,maxPeople:4,color:'blue',slots:10},
-  {date:'2025-08-11',day:'월',room:'패밀리룸',cap:8,minPeople:2,maxPeople:8,color:'green',slots:5},
-  {date:'2025-08-18',day:'월',room:'스탠다드룸',cap:4,minPeople:1,maxPeople:4,color:'blue',slots:10},
-  {date:'2025-08-25',day:'월',room:'디럭스룸',cap:6,minPeople:1,maxPeople:6,color:'orange',slots:5},
+var DEFAULT_SCHEDULES=[
+  {date:'2025-08-04',day:'월',room:'스탠다드룸',cap:4,maxPeople:4,color:'blue',slots:10},
+  {date:'2025-08-11',day:'월',room:'패밀리룸',cap:8,maxPeople:8,color:'green',slots:5},
+  {date:'2025-08-18',day:'월',room:'스탠다드룸',cap:4,maxPeople:4,color:'blue',slots:10},
+  {date:'2025-08-25',day:'월',room:'디럭스룸',cap:6,maxPeople:6,color:'orange',slots:5},
 ];
-var APPLICANTS=[
+var DEFAULT_APPLICANTS=[
   {eno:'12345',name:'김민준',date:'8월 18일',room:'스탠다드룸',fam:2,infant:true,toddler:false,at:'07.29 09:12',status:'selected',rank:'—'},
   {eno:'23456',name:'이서연',date:'8월 18일',room:'스탠다드룸',fam:1,infant:false,toddler:false,at:'07.29 09:45',status:'selected',rank:'—'},
   {eno:'34567',name:'박지훈',date:'8월 18일',room:'스탠다드룸',fam:3,infant:false,toddler:true,at:'07.29 10:02',status:'waitlisted',rank:'1'},
   {eno:'45678',name:'최수아',date:'8월 11일',room:'패밀리룸',fam:5,infant:true,toddler:true,at:'07.29 10:30',status:'selected',rank:'—'},
   {eno:'56789',name:'정도윤',date:'8월 11일',room:'패밀리룸',fam:4,infant:false,toddler:true,at:'07.29 11:05',status:'waitlisted',rank:'2'},
   {eno:'67890',name:'한예진',date:'8월 25일',room:'디럭스룸',fam:2,infant:false,toddler:false,at:'07.30 08:20',status:'cancelled',rank:'—'},
-  {eno:'78901',name:'오민서',date:'8월 4일',room:'스탠다드룸',fam:1,at:'07.30 09:00',status:'selected',rank:'—'},
+  {eno:'78901',name:'오민서',date:'8월 4일',room:'스탠다드룸',fam:1,infant:false,toddler:false,at:'07.30 09:00',status:'selected',rank:'—'},
 ];
+
+function loadData(){
+  try{ROOMS=JSON.parse(localStorage.getItem('ufresh_rooms'))||DEFAULT_ROOMS;}catch(e){ROOMS=DEFAULT_ROOMS;}
+  try{SCHEDULES=JSON.parse(localStorage.getItem('ufresh_schedules'))||DEFAULT_SCHEDULES;}catch(e){SCHEDULES=DEFAULT_SCHEDULES;}
+  try{APPLICANTS=JSON.parse(localStorage.getItem('ufresh_applicants'))||DEFAULT_APPLICANTS;}catch(e){APPLICANTS=DEFAULT_APPLICANTS;}
+}
+function saveRoomsData(){localStorage.setItem('ufresh_rooms',JSON.stringify(ROOMS));}
+function saveSchedulesData(){localStorage.setItem('ufresh_schedules',JSON.stringify(SCHEDULES));}
+function saveApplicantsData(){localStorage.setItem('ufresh_applicants',JSON.stringify(APPLICANTS));}
+
+var ROOMS=[];
+var SCHEDULES=[];
+var APPLICANTS=[];
+loadData();
+
 var curFilter='all';
 var editingRoomId=null;
 
@@ -726,6 +741,7 @@ function addRoom(){
   var note=document.getElementById('room-note').value.trim();
   if(!name||!cap||!slots){alert('이름, 최대 인원, 구좌 수를 입력해 주세요.');return;}
   ROOMS.push({id:Date.now(),name:name,cap:cap,slots:slots,color:color,infant:infantVal,note:note});
+  saveRoomsData();
   closeModal('modal-room');
   renderRooms();
 }
@@ -770,12 +786,14 @@ function saveRoom(){
   var idx=ROOMS.findIndex(function(x){return x.id===editingRoomId});
   if(idx===-1)return;
   ROOMS[idx]=Object.assign({},ROOMS[idx],{name:name,cap:cap,slots:slots,color:color,infant:infantVal,note:note});
+  saveRoomsData();
   closeModal('modal-room');
   renderRooms();
 }
 function deleteRoom(id){
   if(!confirm('삭제하시겠습니까?'))return;
   ROOMS=ROOMS.filter(function(r){return r.id!==id});
+  saveRoomsData();
   renderRooms();
 }
 
@@ -818,12 +836,13 @@ function addSchedule(){
     slots:slotsOv||(room?room.slots:0)
   });
   SCHEDULES.sort(function(a,b){return a.date>b.date?1:-1});
+  saveSchedulesData();
   closeModal('modal-schedule');
   renderSchedule();
 }
 function deleteSchedule(i){
   if(!confirm('삭제하시겠습니까?'))return;
-  SCHEDULES.splice(i,1);renderSchedule();
+  SCHEDULES.splice(i,1);saveSchedulesData();renderSchedule();
 }
 
 // ── APPLICANTS ──
@@ -894,6 +913,7 @@ function runLottery(btn){
 }
 
 function renderAll(){
+  loadData();
   renderRooms();
   renderSchedule();
   renderApplicants(APPLICANTS);
