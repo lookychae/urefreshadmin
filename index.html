@@ -310,6 +310,25 @@ tbody tr:hover td{background:#FAFBFC}
   :root{--sidebar:220px}
 }
 
+/* ── COLOR DOT ── */
+.color-dot{
+  display:block;width:22px;height:22px;border-radius:50%;
+  border:3px solid transparent;transition:all .15s;flex-shrink:0;
+}
+input[name="room-color"]:checked + .color-dot{
+  border-color:#191F28;
+  box-shadow:0 0 0 2px #fff inset;
+  transform:scale(1.15);
+}
+.color-dot:hover{transform:scale(1.1);}
+.color-dot.used{
+  background:#D1D6DB !important;
+  cursor:not-allowed;
+}
+.color-label-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.color-used-label{font-size:9px;color:var(--ink4);white-space:nowrap;max-width:36px;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.color-used-label.active{color:var(--ink3);}
+
 /* ── LOGIN ── */
 .login-wrap{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
@@ -549,12 +568,7 @@ tbody tr:hover td{background:#FAFBFC}
       <div class="form-grid">
         <div class="field"><label>룸타입 이름</label><input type="text" id="room-name" placeholder="예: 스탠다드룸"></div>
         <div class="field"><label>룸타입 색상구분</label>
-          <select id="room-color">
-            <option value="blue">파랑</option>
-            <option value="green">초록</option>
-            <option value="orange">주황</option>
-            <option value="red">빨강</option>
-          </select>
+          <div id="color-picker-wrap" style="display:flex;gap:8px;margin-top:4px;flex-wrap:nowrap;align-items:flex-start"></div>
         </div>
       </div>
       <div class="form-grid">
@@ -647,13 +661,62 @@ loadData();
 var curFilter='all';
 var editingRoomId=null;
 
+var COLOR_LIST=[
+  {value:'red',hex:'#F04452'},
+  {value:'orange',hex:'#FF6B00'},
+  {value:'yellow',hex:'#F5C500'},
+  {value:'green',hex:'#05C072'},
+  {value:'blue',hex:'#3182F6'},
+  {value:'navy',hex:'#3D4FE0'},
+  {value:'purple',hex:'#9B51E0'},
+];
+function renderColorPicker(currentRoomId){
+  var wrap=document.getElementById('color-picker-wrap');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  // 현재 수정중인 룸 제외하고 사용중인 색상 맵 생성
+  var usedMap={};
+  ROOMS.forEach(function(r){
+    if(r.id!==currentRoomId && r.color) usedMap[r.color]=r.name;
+  });
+  // 현재 룸의 색상 (수정시)
+  var currentColor='blue';
+  if(currentRoomId){
+    var cur=ROOMS.find(function(r){return r.id===currentRoomId;});
+    if(cur) currentColor=cur.color||'blue';
+  }
+  COLOR_LIST.forEach(function(c){
+    var isUsed=!!usedMap[c.value];
+    var wrapDiv=document.createElement('div');
+    wrapDiv.className='color-label-wrap';
+    var lbl=document.createElement('label');
+    lbl.style.cssText='cursor:'+(isUsed?'not-allowed':'pointer')+';position:relative';
+    var inp=document.createElement('input');
+    inp.type='radio';inp.name='room-color';inp.value=c.value;
+    inp.style.display='none';
+    if(c.value===currentColor) inp.checked=true;
+    if(isUsed) inp.disabled=true;
+    var dot=document.createElement('span');
+    dot.className='color-dot'+(isUsed?' used':'');
+    dot.style.background=isUsed?'#D1D6DB':c.hex;
+    lbl.appendChild(inp);lbl.appendChild(dot);
+    var nameEl=document.createElement('span');
+    nameEl.className='color-used-label'+(isUsed?'':' active');
+    nameEl.textContent=isUsed?usedMap[c.value]:'';
+    nameEl.title=isUsed?usedMap[c.value]:'';
+    wrapDiv.appendChild(lbl);
+    wrapDiv.appendChild(nameEl);
+    wrap.appendChild(wrapDiv);
+  });
+}
+
 var STATUS_MAP={
   selected:'<span class="chip chip-blue">당첨</span>',
   waitlisted:'<span class="chip chip-orange">대기</span>',
   cancelled:'<span class="chip chip-red">취소</span>',
   confirmed:'<span class="chip chip-green">확정</span>',
 };
-var COLOR_MAP={blue:'#3182F6',green:'#05C072',orange:'#FF6B00',red:'#F04452'};
+var COLOR_MAP={red:'#F04452',orange:'#FF6B00',yellow:'#F5C500',green:'#05C072',blue:'#3182F6',navy:'#3D4FE0',purple:'#9B51E0'};
 
 // ── LOGIN ──
 function doLogin(){
@@ -697,7 +760,6 @@ function renderRooms(){
   var legend=document.getElementById('color-legend');
   if(legend){
     var colorNames={blue:'파랑',green:'초록',orange:'주황',red:'빨강'};
-    var colorHex={blue:'#3182F6',green:'#05C072',orange:'#FF6B00',red:'#F04452'};
     var used={};
     ROOMS.forEach(function(r){
       if(r.color){
@@ -706,12 +768,11 @@ function renderRooms(){
       }
     });
     var html='<span style="font-weight:600;color:var(--ink4)">색상 구분</span>';
-    ['blue','green','orange','red'].forEach(function(c){
-      var names=used[c]?used[c].join(', '):'미사용';
-      var nameColor=used[c]?'var(--ink2)':'var(--ink4)';
+    Object.keys(used).forEach(function(c){
+      var hex=COLOR_MAP[c]||'#ccc';
       html+='<span style="display:inline-flex;align-items:center;gap:5px">'+
-        '<span style="width:10px;height:10px;border-radius:50%;background:'+colorHex[c]+';display:inline-block;flex-shrink:0"></span>'+
-        '<span style="color:'+nameColor+'">'+names+'</span>'+
+        '<span style="width:10px;height:10px;border-radius:50%;background:'+hex+';display:inline-block;flex-shrink:0"></span>'+
+        '<span style="color:var(--ink2)">'+used[c].join(', ')+'</span>'+
       '</span>';
     });
     legend.innerHTML=html;
@@ -743,7 +804,8 @@ function addRoom(){
   var name=document.getElementById('room-name').value.trim();
   var cap=parseInt(document.getElementById('room-cap').value)||0;
   var slots=parseInt(document.getElementById('room-slots').value)||0;
-  var color=document.getElementById('room-color').value;
+  var colorEl=document.querySelector('input[name="room-color"]:checked');
+  var color=colorEl?colorEl.value:'blue';
   var infant=document.querySelector('input[name="room-infant"]:checked');
   var infantVal=infant?infant.value:'impossible';
   var note=document.getElementById('room-note').value.trim();
@@ -761,7 +823,7 @@ function openAddRoom(){
   document.getElementById('room-name').value='';
   document.getElementById('room-slots').value='';
   document.getElementById('room-cap').value='';
-  document.getElementById('room-color').value='blue';
+  renderColorPicker(null);
   document.getElementById('room-infant-no').checked=true;
   document.getElementById('room-note').value='';
   openModal('modal-room');
@@ -776,7 +838,7 @@ function editRoom(id){
   document.getElementById('room-name').value=r.name;
   document.getElementById('room-slots').value=r.slots;
   document.getElementById('room-cap').value=r.cap;
-  document.getElementById('room-color').value=r.color||'blue';
+  renderColorPicker(r.id);
   if(r.infant==='possible'){document.getElementById('room-infant-ok').checked=true;}
   else{document.getElementById('room-infant-no').checked=true;}
   document.getElementById('room-note').value=r.note||'';
@@ -786,7 +848,8 @@ function saveRoom(){
   var name=document.getElementById('room-name').value.trim();
   var cap=parseInt(document.getElementById('room-cap').value)||0;
   var slots=parseInt(document.getElementById('room-slots').value)||0;
-  var color=document.getElementById('room-color').value;
+  var colorEl=document.querySelector('input[name="room-color"]:checked');
+  var color=colorEl?colorEl.value:'blue';
   var infant=document.querySelector('input[name="room-infant"]:checked');
   var infantVal=infant?infant.value:'impossible';
   var note=document.getElementById('room-note').value.trim();
