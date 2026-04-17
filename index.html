@@ -310,6 +310,18 @@ tbody tr:hover td{background:#FAFBFC}
   :root{--sidebar:220px}
 }
 
+/* ── SCHEDULE PAGINATION ── */
+.sch-nav-btn{
+  width:30px;height:30px;border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--page);border:1px solid var(--sep);
+  cursor:pointer;font-size:13px;font-weight:500;color:var(--ink3);
+  font-family:inherit;transition:all .15s;
+}
+.sch-nav-btn:hover:not(:disabled){background:var(--ink5);color:var(--ink)}
+.sch-nav-btn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sch-nav-btn:disabled{opacity:.35;cursor:default}
+
 /* ── COLOR DOT ── */
 .color-dot{
   display:block;width:22px;height:22px;border-radius:50%;
@@ -465,10 +477,8 @@ input[name="room-color"]:checked + .color-dot{
             <div class="kpi-sub">승계 대기 중</div>
           </div>
         </div>
+        <div class="sec-title" style="font-size:15px;margin-bottom:12px">날짜별 신청 현황</div>
         <div class="table-card">
-          <div class="table-card-header">
-            <div class="tch-title">날짜별 신청 현황</div>
-          </div>
           <table>
             <thead><tr><th>이용일</th><th>룸타입</th><th>최대 인원</th><th>신청인원</th><th>경쟁률</th><th>상태</th></tr></thead>
             <tbody>
@@ -501,12 +511,8 @@ input[name="room-color"]:checked + .color-dot{
         <div class="sec-sub">날짜별 룸타입을 배정하고 신청 기간을 설정하세요.</div>
         <div class="schedule-wrap">
           <div class="schedule-header">
-            <div class="sch-month">2025년 8월</div>
+            <div class="sch-month">일정 목록</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <div class="sch-nav">
-                <button>&#8249;</button>
-                <button>&#8250;</button>
-              </div>
               <button class="btn btn-primary btn" onclick="openAddSchedule()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 날짜 추가
@@ -514,6 +520,7 @@ input[name="room-color"]:checked + .color-dot{
             </div>
           </div>
           <div class="schedule-list" id="schedule-list"></div>
+          <div id="schedule-pagination" style="display:none;padding:12px 20px;border-top:1px solid var(--sep);display:flex;align-items:center;justify-content:center;gap:6px"></div>
         </div>
       </div>
 
@@ -869,9 +876,16 @@ function deleteRoom(id){
 }
 
 // ── SCHEDULE ──
+var schPage=0;var SCH_PER_PAGE=10;
 function renderSchedule(){
   var sl=document.getElementById('schedule-list');sl.innerHTML='';
-  SCHEDULES.forEach(function(s,i){
+  var total=SCHEDULES.length;
+  var totalPages=Math.ceil(total/SCH_PER_PAGE);
+  if(schPage>=totalPages&&schPage>0)schPage=totalPages-1;
+  var start=schPage*SCH_PER_PAGE;
+  var pageItems=SCHEDULES.slice(start,start+SCH_PER_PAGE);
+  pageItems.forEach(function(s,pi){
+    var i=start+pi;
     var row=document.createElement('div');row.className='sch-row';
     var c=COLOR_MAP[s.color]||'#3182F6';
     row.innerHTML=
@@ -889,6 +903,34 @@ function renderSchedule(){
       '</div>';
     sl.appendChild(row);
   });
+  // 페이지네이션
+  var pg=document.getElementById('schedule-pagination');
+  if(totalPages<=1){pg.style.display='none';return;}
+  pg.style.display='flex';
+  pg.innerHTML='';
+  // 이전 버튼
+  var prev=document.createElement('button');
+  prev.className='sch-nav-btn';
+  prev.innerHTML='&#8249;';
+  prev.disabled=schPage===0;
+  prev.onclick=function(){schPage--;renderSchedule();};
+  pg.appendChild(prev);
+  // 페이지 번호
+  for(var p=0;p<totalPages;p++){
+    var btn=document.createElement('button');
+    btn.className='sch-nav-btn'+(p===schPage?' on':'');
+    btn.textContent=p+1;
+    btn.setAttribute('data-p',p);
+    btn.onclick=function(){schPage=parseInt(this.getAttribute('data-p'));renderSchedule();};
+    pg.appendChild(btn);
+  }
+  // 다음 버튼
+  var next=document.createElement('button');
+  next.className='sch-nav-btn';
+  next.innerHTML='&#8250;';
+  next.disabled=schPage===totalPages-1;
+  next.onclick=function(){schPage++;renderSchedule();};
+  pg.appendChild(next);
 }
 var editingScheduleIdx=null;
 function openAddSchedule(){
