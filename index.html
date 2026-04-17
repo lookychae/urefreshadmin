@@ -488,7 +488,7 @@ tbody tr:hover td{background:#FAFBFC}
                 <button>&#8249;</button>
                 <button>&#8250;</button>
               </div>
-              <button class="btn btn-primary btn" onclick="openModal('modal-schedule')">
+              <button class="btn btn-primary btn" onclick="openAddSchedule()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 날짜 추가
               </button>
@@ -587,7 +587,7 @@ tbody tr:hover td{background:#FAFBFC}
 <div class="modal-bg" id="modal-schedule">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-head-title">날짜별 룸타입 배정</div>
+      <div class="modal-head-title" id="modal-sch-title">날짜별 룸타입 배정</div>
       <button class="modal-close" onclick="closeModal('modal-schedule')">✕</button>
     </div>
     <div class="modal-body">
@@ -602,7 +602,7 @@ tbody tr:hover td{background:#FAFBFC}
     </div>
     <div class="modal-foot">
       <button class="btn btn-outline" onclick="closeModal('modal-schedule')">취소</button>
-      <button class="btn btn-primary" onclick="addSchedule()">배정하기</button>
+      <button class="btn btn-primary" id="modal-sch-save-btn" onclick="addSchedule()">배정하기</button>
     </div>
   </div>
 </div>
@@ -821,11 +821,56 @@ function renderSchedule(){
         '</div>'+
       '</div>'+
       '<div class="sch-actions">'+
-        '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px">수정</button>'+
+        '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editSchedule('+i+')">수정</button>'+
         '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px" onclick="deleteSchedule('+i+')">삭제</button>'+
       '</div>';
     sl.appendChild(row);
   });
+}
+var editingScheduleIdx=null;
+function openAddSchedule(){
+  editingScheduleIdx=null;
+  document.getElementById('modal-sch-title').textContent='날짜별 룸타입 배정';
+  document.getElementById('modal-sch-save-btn').textContent='배정하기';
+  document.getElementById('modal-sch-save-btn').onclick=addSchedule;
+  document.getElementById('sch-date').value='';
+  document.getElementById('sch-start').value='';
+  document.getElementById('sch-end').value='';
+  openModal('modal-schedule');
+}
+function editSchedule(i){
+  var s=SCHEDULES[i];
+  if(!s)return;
+  editingScheduleIdx=i;
+  document.getElementById('modal-sch-title').textContent='일정 수정';
+  document.getElementById('modal-sch-save-btn').textContent='저장하기';
+  document.getElementById('modal-sch-save-btn').onclick=saveSchedule;
+  document.getElementById('sch-date').value=s.date;
+  document.getElementById('sch-room-type').value=s.room;
+  document.getElementById('sch-start').value=s.start||'';
+  document.getElementById('sch-end').value=s.end||'';
+  openModal('modal-schedule');
+}
+function saveSchedule(){
+  var date=document.getElementById('sch-date').value;
+  var roomName=document.getElementById('sch-room-type').value;
+  if(!date||!roomName){alert('날짜와 룸타입을 선택해 주세요.');return;}
+  var room=ROOMS.find(function(r){return r.name===roomName});
+  var days=['일','월','화','수','목','금','토'];
+  var d=new Date(date);
+  SCHEDULES[editingScheduleIdx]=Object.assign({},SCHEDULES[editingScheduleIdx],{
+    date:date,day:days[d.getDay()],room:roomName,
+    cap:room?room.cap:0,
+    maxPeople:room?room.cap:4,
+    color:room?room.color:'blue',
+    slots:room?room.slots:0,
+    start:document.getElementById('sch-start').value,
+    end:document.getElementById('sch-end').value
+  });
+  SCHEDULES.sort(function(a,b){return a.date>b.date?1:-1});
+  saveSchedulesData();
+  closeModal('modal-schedule');
+  renderSchedule();
 }
 function addSchedule(){
   var date=document.getElementById('sch-date').value;
