@@ -540,7 +540,7 @@ input[name="room-color"]:checked + .color-dot{
         </div>
         <div class="table-card">
           <table>
-            <thead><tr><th>사번</th><th>성명</th><th>이용일</th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th>대기순</th></tr></thead>
+            <thead><tr><th>사번</th><th>성명</th><th>이용일</th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th style="text-align:center">대기순</th></tr></thead>
             <tbody id="applicant-tbody"></tbody>
           </table>
         </div>
@@ -1032,7 +1032,7 @@ function renderApplicants(list){
       '<td>'+toddlerBadge+'</td>'+
       '<td style="color:var(--ink3)">'+a.at+'</td>'+
       '<td>'+(STATUS_MAP[a.status]||a.status)+'</td>'+
-      '<td style="color:var(--ink3)">'+a.rank+'</td>';
+      '<td style="color:var(--ink3);text-align:center">'+a.rank+'</td>';
     tb.appendChild(tr);
   });
 }
