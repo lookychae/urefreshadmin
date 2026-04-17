@@ -682,15 +682,6 @@ function doLogout(){
   document.getElementById('login-pw').value='';
 }
 
-// ── AUTO LOGIN CHECK ──
-(function(){
-  if(localStorage.getItem('ufresh_auth')==='1'){
-    document.getElementById('login-page').style.display='none';
-    document.getElementById('dashboard').style.display='block';
-    renderAll();
-  }
-})();
-
 // ── NAV ──
 function goPage(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
@@ -919,6 +910,15 @@ function renderAll(){
   renderApplicants(APPLICANTS);
   renderLottery();
 }
+
+// ── AUTO LOGIN CHECK ──
+(function(){
+  if(localStorage.getItem('ufresh_auth')==='1'){
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    renderAll();
+  }
+})();
 </script>
 </body>
 </html>
