@@ -466,11 +466,18 @@ tbody tr:hover td{background:#FAFBFC}
       <div class="page" id="pg-rooms">
         <div class="sec-title">룸타입 설정</div>
         <div class="sec-sub">휴양소 룸타입을 등록하고 최대 인원을 설정하세요.</div>
-        <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <button class="btn btn-primary" onclick="openAddRoom()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             룸타입 추가
           </button>
+          <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink3)">
+            <span style="font-weight:600;color:var(--ink4)">색상 구분</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#3182F6;display:inline-block"></span>파랑</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#05C072;display:inline-block"></span>초록</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#FF6B00;display:inline-block"></span>주황</span>
+            <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#F04452;display:inline-block"></span>빨강</span>
+          </div>
         </div>
         <div class="room-grid" id="room-grid"></div>
       </div>
@@ -547,15 +554,7 @@ tbody tr:hover td{background:#FAFBFC}
     <div class="modal-body">
       <div class="form-grid">
         <div class="field"><label>룸타입 이름</label><input type="text" id="room-name" placeholder="예: 스탠다드룸"></div>
-        <div class="field"><label>구좌 수</label><input type="number" id="room-slots" placeholder="예: 10" min="1"></div>
-      </div>
-      <div class="form-grid">
-        <div class="field"><label>이용가능 인원 (최대)</label><input type="number" id="room-cap" placeholder="예: 4" min="1" max="20"></div>
-        <div class="field"></div>
-      </div>
-
-      <div class="form-grid">
-        <div class="field"><label>색상 구분</label>
+        <div class="field"><label>룸타입 색상구분</label>
           <select id="room-color">
             <option value="blue">파랑</option>
             <option value="green">초록</option>
@@ -563,6 +562,10 @@ tbody tr:hover td{background:#FAFBFC}
             <option value="red">빨강</option>
           </select>
         </div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>이용가능 인원 (최대)</label><input type="number" id="room-cap" placeholder="예: 4" min="1" max="20"></div>
+        <div class="field"><label>구좌 수</label><input type="number" id="room-slots" placeholder="예: 10" min="1"></div>
       </div>
       <div class="field" style="margin-bottom:16px">
         <label>영유아 동반</label>
@@ -648,6 +651,7 @@ function doLogin(){
   var id=document.getElementById('login-id').value;
   var pw=document.getElementById('login-pw').value;
   if(id==='admin'&&pw==='1234'){
+    localStorage.setItem('ufresh_auth','1');
     document.getElementById('login-page').style.display='none';
     document.getElementById('dashboard').style.display='block';
     renderAll();
@@ -656,11 +660,21 @@ function doLogin(){
   }
 }
 function doLogout(){
+  localStorage.removeItem('ufresh_auth');
   document.getElementById('dashboard').style.display='none';
   document.getElementById('login-page').style.display='block';
   document.getElementById('login-id').value='';
   document.getElementById('login-pw').value='';
 }
+
+// ── AUTO LOGIN CHECK ──
+(function(){
+  if(localStorage.getItem('ufresh_auth')==='1'){
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    renderAll();
+  }
+})();
 
 // ── NAV ──
 function goPage(id,el){
@@ -707,22 +721,13 @@ function addRoom(){
   var cap=parseInt(document.getElementById('room-cap').value)||0;
   var slots=parseInt(document.getElementById('room-slots').value)||0;
   var color=document.getElementById('room-color').value;
-  var infantMonth=parseInt(document.getElementById('room-infant-month').value)||24;
-  var toddlerMonth=parseInt(document.getElementById('room-toddler-month').value)||84;
   var infant=document.querySelector('input[name="room-infant"]:checked');
   var infantVal=infant?infant.value:'impossible';
   var note=document.getElementById('room-note').value.trim();
   if(!name||!cap||!slots){alert('이름, 최대 인원, 구좌 수를 입력해 주세요.');return;}
-  ROOMS.push({id:Date.now(),name:name,minPeople:minP,cap:cap,slots:slots,color:color,infantMonth:infantMonth,toddlerMonth:toddlerMonth,note:note});
+  ROOMS.push({id:Date.now(),name:name,cap:cap,slots:slots,color:color,infant:infantVal,note:note});
   closeModal('modal-room');
   renderRooms();
-  document.getElementById('room-name').value='';
-  document.getElementById('room-min').value='';
-  document.getElementById('room-infant-month').value='';
-  document.getElementById('room-toddler-month').value='';
-  document.getElementById('room-cap').value='';
-  document.getElementById('room-slots').value='';
-  document.getElementById('room-note').value='';
 }
 function openAddRoom(){
   editingRoomId=null;
