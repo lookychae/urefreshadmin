@@ -832,16 +832,14 @@ function addSchedule(){
   var roomName=document.getElementById('sch-room-type').value;
   if(!date||!roomName){alert('날짜와 룸타입을 선택해 주세요.');return;}
   var room=ROOMS.find(function(r){return r.name===roomName});
-  var maxP=parseInt(document.getElementById('sch-max').value)||(room?room.cap:4);
-  var slotsOv=parseInt(document.getElementById('sch-slots-override').value)||0;
   var days=['일','월','화','수','목','금','토'];
   var d=new Date(date);
   SCHEDULES.push({
     date:date,day:days[d.getDay()],room:roomName,
     cap:room?room.cap:0,
-    maxPeople:maxP,
+    maxPeople:room?room.cap:4,
     color:room?room.color:'blue',
-    slots:slotsOv||(room?room.slots:0)
+    slots:room?room.slots:0
   });
   SCHEDULES.sort(function(a,b){return a.date>b.date?1:-1});
   saveSchedulesData();
