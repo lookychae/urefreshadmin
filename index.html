@@ -360,9 +360,10 @@ input[name="room-color"]:checked + .color-dot{
 .login-field label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px}
 .login-field input{
   width:100%;padding:10px 14px;border:1px solid var(--sep);border-radius:8px;
-  font-size:14px;color:var(--ink);background:var(--card);font-family:inherit;outline:none;
+  font-size:14px;color:var(--ink4);background:var(--card);font-family:inherit;outline:none;
 }
-.login-field input:focus{border-color:var(--blue)}
+.login-field input:focus{border-color:var(--blue);color:var(--ink);font-weight:600;}
+.login-field input::placeholder{color:var(--ink4);}
 .login-btn{
   width:100%;padding:12px;background:var(--blue);color:#fff;border:none;
   border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
@@ -388,6 +389,10 @@ input[name="room-color"]:checked + .color-dot{
         <label>비밀번호</label>
         <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
+      <label for="keep-login" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer">
+        <input type="checkbox" id="keep-login" style="width:16px;height:16px;accent-color:var(--blue);cursor:pointer">
+        <span style="font-size:13px;color:var(--ink3);user-select:none">로그인 상태 유지</span>
+      </label>
       <button class="login-btn" onclick="doLogin()">로그인</button>
       <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
     </div>
@@ -509,18 +514,15 @@ input[name="room-color"]:checked + .color-dot{
       <div class="page" id="pg-schedule">
         <div class="sec-title">일정 관리</div>
         <div class="sec-sub">날짜별 룸타입을 배정하고 신청 기간을 설정하세요.</div>
+        <div style="margin-bottom:16px">
+          <button class="btn btn-primary" onclick="openAddSchedule()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            날짜 추가
+          </button>
+        </div>
         <div class="schedule-wrap">
-          <div class="schedule-header">
-            <div class="sch-month">일정 목록</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn btn-primary btn" onclick="openAddSchedule()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                날짜 추가
-              </button>
-            </div>
-          </div>
           <div class="schedule-list" id="schedule-list"></div>
-          <div id="schedule-pagination" style="display:none;padding:12px 20px;border-top:1px solid var(--sep);display:flex;align-items:center;justify-content:center;gap:6px"></div>
+          <div id="schedule-pagination" style="display:none;padding:12px 20px;border-top:1px solid var(--sep);align-items:center;justify-content:center;gap:6px"></div>
         </div>
       </div>
 
@@ -534,17 +536,12 @@ input[name="room-color"]:checked + .color-dot{
           <div class="filter-chip" onclick="filterApplicants('waitlisted',this)">대기</div>
           <div class="filter-chip" onclick="filterApplicants('cancelled',this)">취소</div>
           <input class="search-input" placeholder="이름 또는 사번 검색" oninput="searchApplicants(this.value)">
+          <button class="btn btn-outline" onclick="exportExcel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            엑셀 다운로드
+          </button>
         </div>
         <div class="table-card">
-          <div class="table-card-header">
-            <div class="tch-title">신청자 목록</div>
-            <div class="tch-actions">
-              <button class="btn btn-outline" onclick="exportExcel()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                엑셀 다운로드
-              </button>
-            </div>
-          </div>
           <table>
             <thead><tr><th>사번</th><th>성명</th><th>이용일</th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th>대기순</th></tr></thead>
             <tbody id="applicant-tbody"></tbody>
@@ -730,7 +727,9 @@ function doLogin(){
   var id=document.getElementById('login-id').value;
   var pw=document.getElementById('login-pw').value;
   if(id==='admin'&&pw==='1234'){
-    localStorage.setItem('ufresh_auth','1');
+    var keep=document.getElementById('keep-login').checked;
+    if(keep){localStorage.setItem('ufresh_auth','1');}
+    else{sessionStorage.setItem('ufresh_auth','1');}
     document.getElementById('login-page').style.display='none';
     document.getElementById('dashboard').style.display='block';
     renderAll();
@@ -740,6 +739,7 @@ function doLogin(){
 }
 function doLogout(){
   localStorage.removeItem('ufresh_auth');
+  sessionStorage.removeItem('ufresh_auth');
   document.getElementById('dashboard').style.display='none';
   document.getElementById('login-page').style.display='block';
   document.getElementById('login-id').value='';
@@ -884,38 +884,57 @@ function renderSchedule(){
   if(schPage>=totalPages&&schPage>0)schPage=totalPages-1;
   var start=schPage*SCH_PER_PAGE;
   var pageItems=SCHEDULES.slice(start,start+SCH_PER_PAGE);
+
+  // 년도별 그룹핑
+  var yearGroups={};
   pageItems.forEach(function(s,pi){
-    var i=start+pi;
-    var row=document.createElement('div');row.className='sch-row';
-    var c=COLOR_MAP[s.color]||'#3182F6';
-    row.innerHTML=
-      '<div class="sch-date">'+s.date.replace('2025-','').replace('-','월 ')+'일 <span class="sch-day">('+s.day+')</span></div>'+
-      '<div class="sch-rooms">'+
-        '<div class="sch-room-tag">'+
-          '<div class="sch-room-dot" style="background:'+c+'"></div>'+
-          '<span class="sch-room-name">'+s.room+'</span>'+
-          '<span class="sch-room-cap">최대 '+s.maxPeople+'명 · 구좌 '+s.slots+'개</span>'+
-        '</div>'+
-      '</div>'+
-      '<div class="sch-actions">'+
-        '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editSchedule('+i+')">수정</button>'+
-        '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px" onclick="deleteSchedule('+i+')">삭제</button>'+
-      '</div>';
-    sl.appendChild(row);
+    var year=s.date.split('-')[0];
+    if(!yearGroups[year])yearGroups[year]=[];
+    yearGroups[year].push({s:s,i:start+pi});
   });
+
+  Object.keys(yearGroups).sort().forEach(function(year){
+    // 년도 헤더
+    var yearHeader=document.createElement('div');
+    yearHeader.style.cssText='padding:10px 20px 6px;font-size:12px;font-weight:700;color:var(--ink3);background:var(--page);border-bottom:1px solid var(--sep);letter-spacing:.3px;';
+    yearHeader.textContent=year+'년';
+    sl.appendChild(yearHeader);
+
+    yearGroups[year].forEach(function(item){
+      var s=item.s;var i=item.i;
+      var row=document.createElement('div');row.className='sch-row';
+      var c=COLOR_MAP[s.color]||'#3182F6';
+      var datePart=s.date.slice(5); // MM-DD
+      var month=datePart.split('-')[0]+'월';
+      var day=datePart.split('-')[1]+'일';
+      row.innerHTML=
+        '<div class="sch-date">'+month+' '+day+' <span class="sch-day">('+s.day+')</span></div>'+
+        '<div class="sch-rooms">'+
+          '<div class="sch-room-tag">'+
+            '<div class="sch-room-dot" style="background:'+c+'"></div>'+
+            '<span class="sch-room-name">'+s.room+'</span>'+
+            '<span class="sch-room-cap">최대 '+s.maxPeople+'명 · 구좌 '+s.slots+'개</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="sch-actions">'+
+          '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editSchedule('+i+')">수정</button>'+
+          '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px" onclick="deleteSchedule('+i+')">삭제</button>'+
+        '</div>';
+      sl.appendChild(row);
+    });
+  });
+
   // 페이지네이션
   var pg=document.getElementById('schedule-pagination');
   if(totalPages<=1){pg.style.display='none';return;}
   pg.style.display='flex';
   pg.innerHTML='';
-  // 이전 버튼
   var prev=document.createElement('button');
   prev.className='sch-nav-btn';
   prev.innerHTML='&#8249;';
   prev.disabled=schPage===0;
   prev.onclick=function(){schPage--;renderSchedule();};
   pg.appendChild(prev);
-  // 페이지 번호
   for(var p=0;p<totalPages;p++){
     var btn=document.createElement('button');
     btn.className='sch-nav-btn'+(p===schPage?' on':'');
@@ -924,7 +943,6 @@ function renderSchedule(){
     btn.onclick=function(){schPage=parseInt(this.getAttribute('data-p'));renderSchedule();};
     pg.appendChild(btn);
   }
-  // 다음 버튼
   var next=document.createElement('button');
   next.className='sch-nav-btn';
   next.innerHTML='&#8250;';
@@ -1078,7 +1096,7 @@ function renderAll(){
 
 // ── AUTO LOGIN CHECK ──
 (function(){
-  if(localStorage.getItem('ufresh_auth')==='1'){
+  if(localStorage.getItem('ufresh_auth')==='1'||sessionStorage.getItem('ufresh_auth')==='1'){
     document.getElementById('login-page').style.display='none';
     document.getElementById('dashboard').style.display='block';
     renderAll();
