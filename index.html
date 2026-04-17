@@ -278,17 +278,14 @@ tbody tr:hover td{background:#FAFBFC}
 .search-input:focus{border-color:var(--blue)}
 
 /* ── LOTTERY PANEL ── */
-.lottery-panel{
-  background:var(--card);border-radius:12px;border:1px solid var(--sep);
-  padding:24px;margin-bottom:20px;
-}
-.lp-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.lp-sub{font-size:13px;color:var(--ink3);margin-bottom:20px}
-.lp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.lp-stat{background:var(--page);border-radius:10px;padding:14px;text-align:center}
-.lp-stat-val{font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.4px}
-.lp-stat-label{font-size:11px;color:var(--ink3);margin-top:3px}
-.lp-actions{display:flex;gap:10px}
+.lottery-table{background:var(--card);border-radius:12px;border:1px solid var(--sep);overflow:hidden;margin-bottom:20px;}
+.lottery-table-head{display:grid;grid-template-columns:1.8fr .8fr .8fr .8fr .8fr 1.4fr;background:var(--page);border-bottom:1px solid var(--sep);}
+.lottery-table-head span{font-size:11px;font-weight:600;color:var(--ink3);padding:10px 16px;letter-spacing:.3px;text-transform:uppercase;}
+.lottery-row{display:grid;grid-template-columns:1.8fr .8fr .8fr .8fr .8fr 1.4fr;align-items:center;border-bottom:1px solid var(--sep);transition:background .1s;}
+.lottery-row:last-child{border-bottom:none}
+.lottery-row:hover{background:#FAFBFC}
+.lottery-row>div{padding:14px 16px;font-size:13px;color:var(--ink);}
+.lp-actions{display:flex;gap:6px;}
 
 /* ── RESPONSIVE: 태블릿 (1024px ~ 1279px) ── */
 @media (min-width:1090px) and (max-width:1279px){
@@ -1056,28 +1053,48 @@ function exportExcel(){alert('엑셀 다운로드 기능은 백엔드 연동 후
 // ── LOTTERY ──
 function renderLottery(){
   var c=document.getElementById('lottery-list');c.innerHTML='';
+  if(!SCHEDULES.length){
+    c.innerHTML='<div style="padding:40px;text-align:center;color:var(--ink4);font-size:13px;">등록된 일정이 없습니다.</div>';
+    return;
+  }
+  var wrap=document.createElement('div');wrap.className='lottery-table';
+  // 헤더
+  var head=document.createElement('div');head.className='lottery-table-head';
+  head.innerHTML=
+    '<span>이용일 · 룸타입</span>'+
+    '<span>총 신청</span>'+
+    '<span>당첨 구좌</span>'+
+    '<span>당첨자</span>'+
+    '<span>대기자</span>'+
+    '<span>관리</span>';
+  wrap.appendChild(head);
   SCHEDULES.forEach(function(s){
     var col=COLOR_MAP[s.color]||'#3182F6';
-    var div=document.createElement('div');div.className='lottery-panel';
-    div.innerHTML=
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">'+
-        '<div style="width:10px;height:10px;border-radius:50%;background:'+col+'"></div>'+
-        '<div class="lp-title">'+s.date.replace('2025-','').replace('-','월 ')+'일 ('+s.day+') · '+s.room+'</div>'+
+    var datePart=s.date.slice(5);
+    var month=parseInt(datePart.split('-')[0])+'월';
+    var day=parseInt(datePart.split('-')[1])+'일';
+    var year=s.date.split('-')[0];
+    var row=document.createElement('div');row.className='lottery-row';
+    row.innerHTML=
+      '<div style="display:flex;align-items:center;gap:8px;">'+
+        '<div style="width:8px;height:8px;border-radius:50%;background:'+col+';flex-shrink:0"></div>'+
+        '<div>'+
+          '<div style="font-weight:600;color:var(--ink)">'+month+' '+day+' ('+s.day+')</div>'+
+          '<div style="font-size:12px;color:var(--ink3);margin-top:1px">'+year+'년 · '+s.room+'</div>'+
+        '</div>'+
       '</div>'+
-      '<div class="lp-sub">최대 '+s.cap+'명 · '+s.slots+'구좌 배정</div>'+
-      '<div class="lp-stats">'+
-        '<div class="lp-stat"><div class="lp-stat-val">12</div><div class="lp-stat-label">총 신청</div></div>'+
-        '<div class="lp-stat"><div class="lp-stat-val">'+s.slots+'</div><div class="lp-stat-label">당첨 구좌</div></div>'+
-        '<div class="lp-stat"><div class="lp-stat-val">0</div><div class="lp-stat-label">당첨자</div></div>'+
-        '<div class="lp-stat"><div class="lp-stat-val">0</div><div class="lp-stat-label">대기자</div></div>'+
-      '</div>'+
+      '<div style="font-weight:700;color:var(--ink)">12</div>'+
+      '<div style="font-weight:700;color:var(--blue)">'+s.slots+'</div>'+
+      '<div style="font-weight:700;color:var(--green-dk)">0</div>'+
+      '<div style="font-weight:700;color:var(--orange-dk)">0</div>'+
       '<div class="lp-actions">'+
-        '<button class="btn btn-primary" onclick="runLottery(this)">추첨 실행</button>'+
-        '<button class="btn btn-outline">결과 보기</button>'+
-        '<button class="btn btn-outline">SMS 발송</button>'+
+        '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="runLottery(this)">추첨 실행</button>'+
+        '<button class="btn btn-outline" style="font-size:12px;padding:5px 12px">결과 보기</button>'+
+        '<button class="btn btn-outline" style="font-size:12px;padding:5px 12px">SMS 발송</button>'+
       '</div>';
-    c.appendChild(div);
+    wrap.appendChild(row);
   });
+  c.appendChild(wrap);
 }
 function runLottery(btn){
   if(!confirm('추첨을 실행하시겠습니까? 실행 후 되돌릴 수 없습니다.'))return;
