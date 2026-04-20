@@ -659,6 +659,7 @@ var SCHEDULES=[];
 var APPLICANTS=[];
 loadData();
 
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbyD3kGYhvCXJc499jpxQFHmte2iFSSh52L8f2Ql9sUNqD9M2pa9JKULVoJ2ApVb3L9r6Q/exec';
 var curFilter='all';
 var editingRoomId=null;
 
@@ -712,6 +713,7 @@ function renderColorPicker(currentRoomId){
 }
 
 var STATUS_MAP={
+  applied:'<span class="chip chip-gray">신청완료</span>',
   selected:'<span class="chip chip-blue">당첨</span>',
   waitlisted:'<span class="chip chip-orange">대기</span>',
   cancelled:'<span class="chip chip-red">취소</span>',
@@ -1048,7 +1050,21 @@ function searchApplicants(q){
   var list=APPLICANTS.filter(function(a){return a.name.includes(q)||a.eno.includes(q)});
   renderApplicants(list);
 }
-function exportExcel(){alert('엑셀 다운로드 기능은 백엔드 연동 후 사용 가능합니다.')}
+function exportExcel(){
+  var headers=['신청일시','사번','성명','이용일','룸타입','동반가족수','영아동반','유아동반','상태','대기순'];
+  var rows=APPLICANTS.map(function(a){
+    return [a.at,a.eno,a.name,a.date,a.room,a.fam,a.infant?'예':'아니오',a.toddler?'예':'아니오',a.status,a.rank];
+  });
+  var csv=[headers].concat(rows).map(function(r){
+    return r.map(function(v){return '"'+(v||'').toString().replace(/"/g,'""')+'"';}).join(',');
+  }).join('\n');
+  var bom='﻿';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='신청자명단_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(url);
+}
 
 // ── LOTTERY ──
 function renderLottery(){
@@ -1103,12 +1119,39 @@ function runLottery(btn){
   btn.disabled=true;
 }
 
+function loadApplicantsFromSheet(){
+  fetch(SCRIPT_URL)
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      if(!rows||!rows.length)return;
+      APPLICANTS=rows.map(function(r,i){
+        return {
+          eno:r['사번']||'',
+          name:r['성명']||'',
+          date:r['이용일']||'',
+          room:r['룸타입']||'',
+          fam:r['동반가족수']||0,
+          infant:r['영아동반']==='예',
+          toddler:r['유아동반']==='예',
+          at:r['신청일시']||'',
+          status:r['상태']==='신청완료'?'applied':'applied',
+          rank:'—'
+        };
+      });
+      saveApplicantsData();
+      renderApplicants(APPLICANTS);
+      renderLottery();
+    })
+    .catch(function(e){console.warn('시트 불러오기 실패',e);});
+}
+
 function renderAll(){
   loadData();
   renderRooms();
   renderSchedule();
   renderApplicants(APPLICANTS);
   renderLottery();
+  loadApplicantsFromSheet();
 }
 
 // ── AUTO LOGIN CHECK ──
