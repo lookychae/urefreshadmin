@@ -430,6 +430,10 @@ input[name="room-color"]:checked + .color-dot{
         추첨 관리
       </div>
       <div class="nav-section">설정</div>
+      <div class="nav-item" onclick="goPage('pg-settings',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        신청 설정
+      </div>
       <div class="nav-item" onclick="doLogout()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
         로그아웃
@@ -443,7 +447,7 @@ input[name="room-color"]:checked + .color-dot{
     <div class="topbar">
       <div class="tb-title" id="topbar-title">대시보드</div>
       <div class="tb-right">
-        <div class="tb-badge">2025년 8월 신청 진행중</div>
+        <div class="tb-badge" id="topbar-badge">신청 설정 필요</div>
         <div class="tb-admin">
           <div class="tb-avatar">A</div>
           admin
@@ -551,6 +555,36 @@ input[name="room-color"]:checked + .color-dot{
         <div class="sec-title">추첨 관리</div>
         <div class="sec-sub">신청 마감 후 날짜별로 추첨을 실행하세요.</div>
         <div id="lottery-list"></div>
+      </div>
+
+      <!-- ══ 신청 설정 ══ -->
+      <div class="page" id="pg-settings">
+        <div class="sec-title">신청 설정</div>
+        <div class="sec-sub">신청 기간과 공지 문구를 설정하세요.</div>
+        <div class="table-card" style="max-width:600px;padding:24px">
+          <div class="form-grid" style="margin-bottom:20px">
+            <div class="field">
+              <label>신청 시작일시</label>
+              <input type="datetime-local" id="setting-start">
+            </div>
+            <div class="field">
+              <label>신청 마감일시</label>
+              <input type="datetime-local" id="setting-end">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:20px">
+            <label>헤로 배너 제목 (앱 메인 화면)</label>
+            <input type="text" id="setting-hero-title" placeholder="예: 8월 휴양소 추첨">
+          </div>
+          <div class="field" style="margin-bottom:20px">
+            <label>헤로 배너 부제목</label>
+            <input type="text" id="setting-hero-sub" placeholder="예: 이번엔 내가 당첨될 것 같은 느낌 🌴">
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="saveSettings()">저장하기</button>
+            <div id="setting-saved-msg" style="display:none;align-items:center;font-size:13px;color:var(--green-dk);font-weight:600">✓ 저장되었습니다</div>
+          </div>
+        </div>
       </div>
 
     </div><!-- content -->
@@ -751,7 +785,7 @@ function goPage(id,el){
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('on')});
   document.getElementById(id).classList.add('on');
   el.classList.add('on');
-  var titles={'pg-overview':'대시보드','pg-rooms':'룸타입 설정','pg-schedule':'일정 관리','pg-applicants':'신청자 명단','pg-lottery':'추첨 관리'};
+  var titles={'pg-overview':'대시보드','pg-rooms':'룸타입 설정','pg-schedule':'일정 관리','pg-applicants':'신청자 명단','pg-lottery':'추첨 관리','pg-settings':'신청 설정'};
   document.getElementById('topbar-title').textContent=titles[id]||'';
 }
 
@@ -1145,12 +1179,52 @@ function loadApplicantsFromSheet(){
     .catch(function(e){console.warn('시트 불러오기 실패',e);});
 }
 
+function saveSettings(){
+  var start = document.getElementById('setting-start').value;
+  var end   = document.getElementById('setting-end').value;
+  var heroTitle = document.getElementById('setting-hero-title').value;
+  var heroSub   = document.getElementById('setting-hero-sub').value;
+  var settings = {start:start, end:end, heroTitle:heroTitle, heroSub:heroSub};
+  localStorage.setItem('urefresh_settings', JSON.stringify(settings));
+  // topbar badge 업데이트
+  updateTopbarBadge();
+  var msg = document.getElementById('setting-saved-msg');
+  msg.style.display='flex';
+  setTimeout(function(){msg.style.display='none';}, 2000);
+}
+function loadSettings(){
+  try{
+    var s = JSON.parse(localStorage.getItem('urefresh_settings'));
+    if(!s) return;
+    if(s.start) document.getElementById('setting-start').value = s.start;
+    if(s.end)   document.getElementById('setting-end').value   = s.end;
+    if(s.heroTitle) document.getElementById('setting-hero-title').value = s.heroTitle;
+    if(s.heroSub)   document.getElementById('setting-hero-sub').value   = s.heroSub;
+    updateTopbarBadge();
+  }catch(e){}
+}
+function updateTopbarBadge(){
+  try{
+    var s = JSON.parse(localStorage.getItem('urefresh_settings'));
+    var badge = document.getElementById('topbar-badge');
+    if(!badge) return;
+    if(!s||!s.end){ badge.textContent='신청 설정 필요'; return; }
+    var now = Date.now();
+    var start = s.start ? new Date(s.start).getTime() : 0;
+    var end   = s.end   ? new Date(s.end).getTime()   : 0;
+    if(now < start) badge.textContent = '신청 대기 중';
+    else if(now >= start && now <= end) badge.textContent = '신청 진행 중';
+    else badge.textContent = '신청 마감됨';
+  }catch(e){}
+}
+
 function renderAll(){
   loadData();
   renderRooms();
   renderSchedule();
   renderApplicants(APPLICANTS);
   renderLottery();
+  loadSettings();
   loadApplicantsFromSheet();
 }
 
