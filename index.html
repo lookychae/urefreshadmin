@@ -68,6 +68,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         추첨 관리
       </div>
+      <div class="nav-section">콘텐츠</div>
+      <div class="nav-item" onclick="goPage('pg-notices',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        공지사항
+      </div>
       <div class="nav-section">설정</div>
       <div class="nav-item" onclick="goPage('pg-settings',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -196,6 +201,24 @@
         <div id="lottery-list"></div>
       </div>
 
+      <!-- ══ 공지사항 관리 ══ -->
+      <div class="page" id="pg-notices">
+        <div class="sec-title">공지사항</div>
+        <div class="sec-sub">앱 공지 탭에 노출될 공지사항을 등록/수정/삭제하세요.</div>
+        <div style="margin-bottom:16px">
+          <button class="btn btn-primary" onclick="openAddNotice()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            공지 등록
+          </button>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>제목</th><th>작성자</th><th>작성일</th><th style="text-align:right">관리</th></tr></thead>
+            <tbody id="notice-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ══ 신청 설정 ══ -->
       <div class="page" id="pg-settings">
         <div class="sec-title">신청 설정</div>
@@ -295,6 +318,37 @@
   </div>
 </div>
 
+<!-- ══ MODAL: 공지사항 등록/수정 ══ -->
+<div class="modal-bg" id="modal-notice">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-title" id="modal-notice-title">공지사항 등록</div>
+      <button class="modal-close" onclick="closeModal('modal-notice')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:16px">
+        <label>제목</label>
+        <input type="text" id="notice-title" placeholder="예: 2025년 8월 추첨 일정 안내" maxlength="120">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>작성자</label>
+          <input type="text" id="notice-author" placeholder="총무팀" value="총무팀">
+        </div>
+        <div class="field"></div>
+      </div>
+      <div class="field">
+        <label>내용</label>
+        <textarea id="notice-content" placeholder="공지 본문" style="min-height:180px"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-notice')">취소</button>
+      <button class="btn btn-primary" id="modal-notice-save-btn" onclick="addNotice()">등록하기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ SCRIPTS (로드 순서: data → storage → api → auth → 페이지별 → app) ══ -->
 <script src="js/data.js"></script>
 <script src="js/storage.js"></script>
@@ -304,6 +358,7 @@
 <script src="js/schedule.js"></script>
 <script src="js/applicants.js"></script>
 <script src="js/lottery.js"></script>
+<script src="js/notices.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/app.js"></script>
 </body>

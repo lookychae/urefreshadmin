@@ -16,6 +16,7 @@ function goPage(id, el){
     'pg-schedule':   '일정 관리',
     'pg-applicants': '신청자 명단',
     'pg-lottery':    '추첨 관리',
+    'pg-notices':    '공지사항',
     'pg-settings':   '신청 설정'
   };
   document.getElementById('topbar-title').textContent = titles[id] || '';
@@ -34,6 +35,7 @@ function renderAll(){
   renderLottery();
   loadSettings();
   loadApplicantsFromSheet();
+  loadNoticesFromSheet();
 }
 
 // ── 자동 로그인 체크 (페이지 로드 직후) ──
