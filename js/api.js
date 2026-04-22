@@ -4,7 +4,7 @@
  *       apiGetNotices, apiSaveNotice, apiDeleteNotice
  */
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVx3lQqozqixGQWHLaYpFMlqS8NbPiUCgAyEjoDxFEnrdQJcfnlS4vA-JK8RXGoIoc_g/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdBHHXjj4O1XbPELIAbikq-AB92fIhbMixPpwAIai8tjmqzwVKlRCIDwpNQ3i_l5ghYg/exec';
 
 function apiGetAllApps(){
   return fetch(SCRIPT_URL).then(function(r){ return r.json(); });
