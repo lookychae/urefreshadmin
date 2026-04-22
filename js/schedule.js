@@ -8,6 +8,15 @@ var schPage = 0;
 var SCH_PER_PAGE = 10;
 var editingScheduleIdx = null;
 
+// 'YYYY-MM-DD' → 'YYYY.MM.DD' (비어있으면 '—')
+function _fmtSchDate(v){
+  if(!v) return '—';
+  var s = String(v);
+  var p = s.split('-');
+  if(p.length === 3) return p[0] + '.' + p[1] + '.' + p[2];
+  return s;
+}
+
 // ── 서버 동기화: SCHEDULES 배열 전체를 Google Sheets 에 저장 ──
 function _syncSchedules(){
   apiSaveSchedules(SCHEDULES).catch(function(e){
@@ -71,6 +80,18 @@ function renderSchedule(){
       var datePart = s.date.slice(5);
       var month = datePart.split('-')[0] + '월';
       var day   = datePart.split('-')[1] + '일';
+
+      var periodHtml;
+      if(s.start || s.end){
+        periodHtml =
+          '<div class="sch-period">' +
+            '<div class="sch-period-row"><span class="sch-period-lbl">신청일</span><span class="sch-period-val">' + _fmtSchDate(s.start) + '</span></div>' +
+            '<div class="sch-period-row"><span class="sch-period-lbl">마감일</span><span class="sch-period-val">' + _fmtSchDate(s.end) + '</span></div>' +
+          '</div>';
+      } else {
+        periodHtml = '<div class="sch-period sch-period-empty">신청 기간 미설정</div>';
+      }
+
       row.innerHTML =
         '<div class="sch-date">' + month + ' ' + day + ' <span class="sch-day">(' + s.day + ')</span></div>' +
         '<div class="sch-rooms">' +
@@ -80,6 +101,7 @@ function renderSchedule(){
             '<span class="sch-room-cap">최대 ' + s.maxPeople + '명 · 구좌 ' + s.slots + '개</span>' +
           '</div>' +
         '</div>' +
+        periodHtml +
         '<div class="sch-actions">' +
           '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editSchedule(' + i + ')">수정</button>' +
           '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px" onclick="deleteSchedule(' + i + ')">삭제</button>' +
