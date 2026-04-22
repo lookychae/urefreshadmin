@@ -159,13 +159,23 @@
       <div class="page" id="pg-schedule">
         <div class="sec-title">일정 관리</div>
         <div class="sec-sub">날짜별 룸타입을 배정하고 신청 기간을 설정하세요.</div>
-        <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
           <button class="btn btn-primary" onclick="openAddSchedule()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             날짜 추가
           </button>
+          <button class="btn btn-danger" id="sch-delete-selected-btn" onclick="deleteSelectedSchedules()" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            선택 삭제 <span id="sch-selected-count">0</span>건
+          </button>
         </div>
         <div class="schedule-wrap">
+          <div class="sch-toolbar">
+            <label class="sch-select-all">
+              <input type="checkbox" id="sch-select-all" onchange="toggleSelectAllSchedules(this)">
+              <span>전체 선택</span>
+            </label>
+          </div>
           <div class="schedule-list" id="schedule-list"></div>
           <div id="schedule-pagination" style="display:none;padding:12px 20px;border-top:1px solid var(--sep);align-items:center;justify-content:center;gap:6px"></div>
         </div>

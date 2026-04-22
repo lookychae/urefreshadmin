@@ -269,6 +269,29 @@ tbody tr:hover td{background:#FAFBFC}
   padding-left:12px;border-left:1px dashed var(--sep);
 }
 
+/* ── SCHEDULE MULTI-SELECT ── */
+.sch-toolbar{
+  padding:10px 20px;border-bottom:1px solid var(--sep);
+  background:var(--page);
+  display:flex;align-items:center;gap:16px;
+}
+.sch-select-all{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:600;color:var(--ink2);
+  cursor:pointer;user-select:none;
+}
+.sch-select-all input[type=checkbox]{
+  width:16px;height:16px;accent-color:var(--blue);cursor:pointer;
+}
+.sch-check{
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  padding:0 4px;
+}
+.sch-check input[type=checkbox]{
+  width:16px;height:16px;accent-color:var(--blue);cursor:pointer;
+}
+.sch-row:has(.sch-check input:checked){background:var(--blue-ll);}
+
 /* ── APPLICANT LIST ── */
 .filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .filter-chip{

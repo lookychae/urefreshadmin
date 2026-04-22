@@ -7,6 +7,7 @@
 var schPage = 0;
 var SCH_PER_PAGE = 10;
 var editingScheduleIdx = null;
+var schSelected = {};   // key: 원본 index, value: true
 
 // 'YYYY-MM-DD' → 'YYYY.MM.DD' (비어있으면 '—')
 function _fmtSchDate(v){
@@ -92,7 +93,9 @@ function renderSchedule(){
         periodHtml = '<div class="sch-period sch-period-empty">신청 기간 미설정</div>';
       }
 
+      var checked = schSelected[i] ? 'checked' : '';
       row.innerHTML =
+        '<label class="sch-check"><input type="checkbox" ' + checked + ' data-idx="' + i + '" onchange="toggleScheduleSelection(this)"></label>' +
         '<div class="sch-date">' + month + ' ' + day + ' <span class="sch-day">(' + s.day + ')</span></div>' +
         '<div class="sch-rooms">' +
           '<div class="sch-room-tag">' +
@@ -109,6 +112,9 @@ function renderSchedule(){
       sl.appendChild(row);
     });
   });
+
+  // 선택 UI (전체선택/선택삭제) 동기화
+  _syncSchSelectionUI();
 
   // 페이지네이션
   var pg = document.getElementById('schedule-pagination');
@@ -215,6 +221,82 @@ function addSchedule(){
 function deleteSchedule(i){
   if(!confirm('삭제하시겠습니까?')) return;
   SCHEDULES.splice(i, 1);
+  saveSchedulesData();
+  _syncSchedules();
+  // 삭제로 인덱스가 밀리므로 선택 상태 초기화
+  schSelected = {};
+  renderSchedule();
+  renderLottery();
+}
+
+// ── 다중 선택 ──────────────────────────────────────────────
+function toggleScheduleSelection(input){
+  var idx = parseInt(input.getAttribute('data-idx'));
+  if(isNaN(idx)) return;
+  if(input.checked) schSelected[idx] = true;
+  else              delete schSelected[idx];
+  _syncSchSelectionUI();
+}
+
+function toggleSelectAllSchedules(input){
+  if(input.checked){
+    // 전체 선택: 모든 원본 인덱스를 선택 상태로
+    schSelected = {};
+    for(var i = 0; i < SCHEDULES.length; i++) schSelected[i] = true;
+  } else {
+    schSelected = {};
+  }
+  // 체크박스들 재렌더 없이 상태만 반영
+  var boxes = document.querySelectorAll('.sch-check input[type=checkbox]');
+  for(var j = 0; j < boxes.length; j++){
+    var idx = parseInt(boxes[j].getAttribute('data-idx'));
+    boxes[j].checked = !!schSelected[idx];
+  }
+  _syncSchSelectionUI();
+}
+
+function _syncSchSelectionUI(){
+  var keys = Object.keys(schSelected).filter(function(k){ return schSelected[k]; });
+  var count = keys.length;
+
+  var btn = document.getElementById('sch-delete-selected-btn');
+  var countEl = document.getElementById('sch-selected-count');
+  if(btn){
+    btn.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
+  if(countEl) countEl.textContent = count;
+
+  var selAll = document.getElementById('sch-select-all');
+  if(selAll){
+    if(SCHEDULES.length === 0){
+      selAll.checked = false;
+      selAll.indeterminate = false;
+    } else if(count === SCHEDULES.length){
+      selAll.checked = true;
+      selAll.indeterminate = false;
+    } else if(count === 0){
+      selAll.checked = false;
+      selAll.indeterminate = false;
+    } else {
+      selAll.checked = false;
+      selAll.indeterminate = true;
+    }
+  }
+}
+
+function deleteSelectedSchedules(){
+  var keys = Object.keys(schSelected)
+    .filter(function(k){ return schSelected[k]; })
+    .map(function(k){ return parseInt(k); })
+    .filter(function(n){ return !isNaN(n); });
+  if(!keys.length) return;
+  if(!confirm('선택한 ' + keys.length + '건의 일정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+  // 인덱스 밀림 방지 위해 내림차순으로 splice
+  keys.sort(function(a, b){ return b - a; });
+  keys.forEach(function(i){ SCHEDULES.splice(i, 1); });
+
+  schSelected = {};
   saveSchedulesData();
   _syncSchedules();
   renderSchedule();
