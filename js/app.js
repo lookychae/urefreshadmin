@@ -30,7 +30,8 @@ function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function renderAll(){
   loadData();
   renderRooms();
-  renderSchedule();
+  // renderSchedule 은 loadSchedulesFromSheet 에서 서버 응답 후 호출됨
+  // (localStorage 옛날 데이터가 잠깐 노출되던 현상 방지)
   renderApplicants(APPLICANTS);
   renderLottery();
   loadSettings();

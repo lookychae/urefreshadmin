@@ -26,28 +26,43 @@ function _syncSchedules(){
 }
 
 // ── 서버에서 일정 로드 ──
+// 초기 호출 시엔 localStorage 에 있던 옛날 데이터를 먼저 그리지 않도록
+// 로딩 중 플레이스홀더 → 서버 응답 → 실제 렌더 순서로 처리
 function loadSchedulesFromSheet(){
+  var sl = document.getElementById('schedule-list');
+  if(sl){
+    sl.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink4);font-size:13px;">일정을 불러오는 중...</div>';
+  }
+
   apiGetSchedules()
     .then(function(rows){
-      if(!Array.isArray(rows)) return;
-      SCHEDULES = rows.map(function(r){
-        return {
-          date: r.date || '',
-          day:  r.day  || '',
-          room: r.room || '',
-          cap:  Number(r.cap || 0),
-          maxPeople: Number(r.maxPeople || 0),
-          color: r.color || '',
-          slots: Number(r.slots || 0),
-          start: r.start || '',
-          end:   r.end   || ''
-        };
-      });
+      if(!Array.isArray(rows)){
+        SCHEDULES = [];
+      } else {
+        SCHEDULES = rows.map(function(r){
+          return {
+            date: r.date || '',
+            day:  r.day  || '',
+            room: r.room || '',
+            cap:  Number(r.cap || 0),
+            maxPeople: Number(r.maxPeople || 0),
+            color: r.color || '',
+            slots: Number(r.slots || 0),
+            start: r.start || '',
+            end:   r.end   || ''
+          };
+        });
+      }
       saveSchedulesData();
+      schSelected = {};
       renderSchedule();
       renderLottery();
     })
-    .catch(function(e){ console.warn('일정 불러오기 실패', e); });
+    .catch(function(e){
+      console.warn('일정 불러오기 실패', e);
+      // 서버 실패 시에만 localStorage fallback
+      renderSchedule();
+    });
 }
 
 function renderSchedule(){
