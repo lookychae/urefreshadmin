@@ -1,11 +1,44 @@
 /**
- * 일정 관리 (CRUD + 페이지네이션)
- * 전역: renderSchedule, openAddSchedule, addSchedule, editSchedule, saveSchedule, deleteSchedule
+ * 일정 관리 (CRUD + 페이지네이션 + 서버 동기화)
+ * 전역: renderSchedule, openAddSchedule, addSchedule, editSchedule, saveSchedule,
+ *       deleteSchedule, loadSchedulesFromSheet, _syncSchedules
  */
 
 var schPage = 0;
 var SCH_PER_PAGE = 10;
 var editingScheduleIdx = null;
+
+// ── 서버 동기화: SCHEDULES 배열 전체를 Google Sheets 에 저장 ──
+function _syncSchedules(){
+  apiSaveSchedules(SCHEDULES).catch(function(e){
+    console.warn('일정 서버 저장 실패', e);
+  });
+}
+
+// ── 서버에서 일정 로드 ──
+function loadSchedulesFromSheet(){
+  apiGetSchedules()
+    .then(function(rows){
+      if(!Array.isArray(rows)) return;
+      SCHEDULES = rows.map(function(r){
+        return {
+          date: r.date || '',
+          day:  r.day  || '',
+          room: r.room || '',
+          cap:  Number(r.cap || 0),
+          maxPeople: Number(r.maxPeople || 0),
+          color: r.color || '',
+          slots: Number(r.slots || 0),
+          start: r.start || '',
+          end:   r.end   || ''
+        };
+      });
+      saveSchedulesData();
+      renderSchedule();
+      renderLottery();
+    })
+    .catch(function(e){ console.warn('일정 불러오기 실패', e); });
+}
 
 function renderSchedule(){
   var sl = document.getElementById('schedule-list');
@@ -139,8 +172,10 @@ function saveSchedule(){
   SCHEDULES[editingScheduleIdx] = Object.assign({}, SCHEDULES[editingScheduleIdx], entry);
   SCHEDULES.sort(function(a, b){ return a.date > b.date ? 1 : -1; });
   saveSchedulesData();
+  _syncSchedules();
   closeModal('modal-schedule');
   renderSchedule();
+  renderLottery();
 }
 
 function addSchedule(){
@@ -149,13 +184,17 @@ function addSchedule(){
   SCHEDULES.push(entry);
   SCHEDULES.sort(function(a, b){ return a.date > b.date ? 1 : -1; });
   saveSchedulesData();
+  _syncSchedules();
   closeModal('modal-schedule');
   renderSchedule();
+  renderLottery();
 }
 
 function deleteSchedule(i){
   if(!confirm('삭제하시겠습니까?')) return;
   SCHEDULES.splice(i, 1);
   saveSchedulesData();
+  _syncSchedules();
   renderSchedule();
+  renderLottery();
 }

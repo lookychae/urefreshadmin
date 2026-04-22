@@ -35,3 +35,15 @@ function apiDeleteNotice(id){
     body: JSON.stringify({ action:'deleteNotice', id: id })
   });
 }
+
+// ── 일정 ──
+function apiGetSchedules(){
+  return fetch(SCRIPT_URL + '?action=getSchedules').then(function(r){ return r.json(); });
+}
+
+function apiSaveSchedules(list){
+  return fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action:'saveSchedules', schedules: list })
+  });
+}

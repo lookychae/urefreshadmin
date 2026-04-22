@@ -36,6 +36,7 @@ function renderAll(){
   loadSettings();
   loadApplicantsFromSheet();
   loadNoticesFromSheet();
+  loadSchedulesFromSheet();
 }
 
 // ── 자동 로그인 체크 (페이지 로드 직후) ──
