@@ -236,7 +236,7 @@ tbody tr:hover td{background:#FAFBFC}
 .sch-row:last-child{border-bottom:none}
 .sch-date{width:100px;font-size:13px;font-weight:700;color:var(--ink);flex-shrink:0}
 .sch-day{font-size:12px;color:var(--ink3);font-weight:400}
-.sch-rooms{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.sch-rooms{display:flex;gap:8px;flex:0 1 auto;flex-wrap:wrap}
 .sch-room-tag{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--page);border:1px solid var(--sep);
@@ -251,7 +251,7 @@ tbody tr:hover td{background:#FAFBFC}
   cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .sch-add:hover{border-color:var(--blue);color:var(--blue)}
-.sch-actions{display:flex;gap:6px;flex-shrink:0}
+.sch-actions{display:flex;gap:6px;flex-shrink:0;margin-left:auto;padding-left:24px;}
 .sch-period{
   display:flex;flex-direction:row;align-items:center;gap:10px;
   flex-shrink:0;white-space:nowrap;
