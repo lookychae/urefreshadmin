@@ -47,3 +47,11 @@ function apiSaveSchedules(list){
     body: JSON.stringify({ action:'saveSchedules', schedules: list })
   });
 }
+
+// 신청자 행 삭제 (eno + at(신청일시) 로 매칭)
+function apiDeleteApplicant(eno, at){
+  return fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action:'deleteApplicant', eno: eno, at: at })
+  });
+}

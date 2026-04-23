@@ -198,7 +198,7 @@
         </div>
         <div class="table-card">
           <table>
-            <thead><tr><th>사번</th><th>성명</th><th>이용일</th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th style="text-align:center">대기순</th></tr></thead>
+            <thead><tr><th>사번</th><th>성명</th><th style="cursor:pointer;user-select:none" onclick="toggleApplicantSort('date')">이용일 <span id="sort-date-arrow" style="font-size:10px;margin-left:2px">▼</span></th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th style="text-align:center">대기순</th><th style="text-align:center">관리</th></tr></thead>
             <tbody id="applicant-tbody"></tbody>
           </table>
         </div>
