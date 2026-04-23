@@ -63,7 +63,7 @@ function renderLottery(){
 
     var runBtnHtml = isDone
       ? '<button class="btn btn-green" style="font-size:12px;padding:5px 12px" disabled>추첨 완료</button>'
-      : '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" data-key="' + _escAttr(key) + '" onclick="runLottery(this)">추첨 실행</button>';
+      : '<button class="btn btn-primary" style="font-size:12px;padding:5px 12px" data-key="' + escAttr(key) + '" onclick="runLottery(this)">추첨 실행</button>';
 
     row.innerHTML =
       '<div style="display:flex;align-items:center;gap:8px;">' +
@@ -85,10 +85,6 @@ function renderLottery(){
     wrap.appendChild(row);
   });
   c.appendChild(wrap);
-}
-
-function _escAttr(v){
-  return String(v).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function runLottery(btn){

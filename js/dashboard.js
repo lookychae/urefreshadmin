@@ -13,17 +13,6 @@ function renderDashboard(){
   _dashRenderTable();
 }
 
-// ── 신청자 date → 'YYYY-MM-DD' 정규화 ──
-function _dashNormAppDate(v){
-  if(!v) return '';
-  var s = String(v).trim();
-  var mKor = s.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
-  if(mKor) return mKor[1] + '-' + String(mKor[2]).padStart(2, '0') + '-' + String(mKor[3]).padStart(2, '0');
-  var d = new Date(s);
-  if(isNaN(d.getTime())) return s;
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-
 function _dashIsCancelled(a){
   var st = String(a.status || '');
   return st === 'cancelled' || st === '취소됨';
@@ -33,7 +22,7 @@ function _dashCountAppsFor(schedule){
   var target = schedule.date || '';
   return APPLICANTS.filter(function(a){
     if(_dashIsCancelled(a)) return false;
-    return _dashNormAppDate(a.date) === target;
+    return toIsoDate(a.date) === target;
   }).length;
 }
 

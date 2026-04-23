@@ -9,29 +9,9 @@ var SCH_PER_PAGE = 10;
 var editingScheduleIdx = null;
 var schSelected = {};   // key: 원본 index, value: true
 
-// 'YYYY-MM-DD' → 'YYYY.MM.DD' (비어있으면 '—')
+// 빈 값은 '—' 로, 그 외는 utils.js 의 toDotDate 사용
 function _fmtSchDate(v){
-  if(!v) return '—';
-  var s = String(v);
-  var p = s.split('-');
-  if(p.length === 3) return p[0] + '.' + p[1] + '.' + p[2];
-  return s;
-}
-
-// 어떤 포맷이든 'YYYY-MM-DD' 로 정규화
-// - 이미 'YYYY-MM-DD' → 그대로
-// - ISO 'YYYY-MM-DDTHH:MM:SSZ' → 날짜만
-// - 긴 Date 포맷 'Sat May 02 2026 ...' → 파싱
-// - 빈 값 → ''
-function _normalizeDate(v){
-  if(!v) return '';
-  var s = String(v).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  var d = new Date(s);
-  if(isNaN(d.getTime())) return s;
-  return d.getFullYear() + '-' +
-    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0');
+  return v ? toDotDate(v) : '—';
 }
 
 // ── 서버 동기화: SCHEDULES 배열 전체를 Google Sheets 에 저장 ──
@@ -57,15 +37,15 @@ function loadSchedulesFromSheet(){
       } else {
         SCHEDULES = rows.map(function(r){
           return {
-            date: _normalizeDate(r.date),
+            date: toIsoDate(r.date),
             day:  r.day  || '',
             room: r.room || '',
             cap:  Number(r.cap || 0),
             maxPeople: Number(r.maxPeople || 0),
             color: r.color || '',
             slots: Number(r.slots || 0),
-            start: _normalizeDate(r.start),
-            end:   _normalizeDate(r.end)
+            start: toIsoDate(r.start),
+            end:   toIsoDate(r.end)
           };
         });
       }

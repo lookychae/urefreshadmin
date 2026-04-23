@@ -44,16 +44,6 @@ function loadNoticesFromSheet(){
 }
 
 // ── 렌더 ──
-function _fmtDate(iso){
-  if(!iso) return '';
-  var d = new Date(iso);
-  if(isNaN(d.getTime())) return String(iso);
-  var y = d.getFullYear();
-  var m = String(d.getMonth() + 1).padStart(2, '0');
-  var dd = String(d.getDate()).padStart(2, '0');
-  return y + '.' + m + '.' + dd;
-}
-
 function renderNotices(){
   var tb = document.getElementById('notice-tbody');
   if(!tb) return;
@@ -73,7 +63,7 @@ function renderNotices(){
     tr.innerHTML =
       '<td style="font-weight:600">' + title + '</td>' +
       '<td style="color:var(--ink3)">' + author + '</td>' +
-      '<td style="color:var(--ink3)">' + _fmtDate(n.createdAt) + '</td>' +
+      '<td style="color:var(--ink3)">' + toDotDate(n.createdAt) + '</td>' +
       '<td style="text-align:right">' +
         '<button class="btn btn-outline" style="font-size:12px;padding:5px 10px" onclick="editNotice(\'' + n.id + '\')">수정</button> ' +
         '<button class="btn btn-danger" style="font-size:12px;padding:5px 10px;margin-left:4px" onclick="deleteNotice(\'' + n.id + '\')">삭제</button>' +
