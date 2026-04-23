@@ -241,13 +241,10 @@
         <div class="sec-title">배너 설정</div>
         <div class="sec-sub">앱 메인 화면 상단 히어로 배너에 노출될 문구를 설정하세요.<br>※ 신청 시작/마감일은 <b>[일정 관리]</b> 의 날짜별 설정으로 자동 반영됩니다.</div>
         <div class="table-card" style="max-width:640px;padding:24px">
-          <div class="field" style="margin-bottom:20px">
-            <label>배너 제목 <span style="color:var(--ink4);font-weight:400">(앱 메인 상단에 크게 노출)</span></label>
-            <input type="text" id="setting-hero-title" placeholder="예: 5월 휴양소 추첨">
-          </div>
-          <div class="field" style="margin-bottom:20px">
-            <label>배너 부제목 <span style="color:var(--ink4);font-weight:400">(제목 아래 한 줄, 선택 입력)</span></label>
-            <input type="text" id="setting-hero-sub" placeholder="예: 이번엔 내가 당첨될 것 같은 느낌 🌴">
+          <div class="field" style="margin-bottom:16px">
+            <label>배너 제목 <span style="color:var(--ink4);font-weight:400">(앱 메인 상단에 크게 노출, 25자 이내)</span></label>
+            <input type="text" id="setting-hero-title" placeholder="예: 5월 휴양소 추첨" maxlength="25" oninput="_refreshBannerPreview()">
+            <div id="setting-hero-title-count" style="align-self:flex-end;font-size:11px;color:var(--ink4);margin-top:2px">0 / 25</div>
           </div>
 
           <!-- 미리보기 -->
@@ -255,7 +252,6 @@
             <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:8px">미리보기</div>
             <div id="banner-preview" style="background:var(--blue);border-radius:12px;padding:18px 20px;color:#fff">
               <div id="banner-preview-title" style="font-size:16px;font-weight:700;color:#FDE68A;letter-spacing:-.3px">휴양소 추첨</div>
-              <div id="banner-preview-sub" style="font-size:13px;color:rgba(255,255,255,.85);margin-top:4px;min-height:18px"></div>
             </div>
           </div>
 

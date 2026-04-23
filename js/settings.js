@@ -1,21 +1,20 @@
 /**
- * 배너 설정 (앱 메인 히어로)
+ * 배너 설정 (앱 메인 히어로 제목)
  * - 신청 시작/마감일은 [일정 관리] 로 이관되어 여기서는 다루지 않음
- * - 저장 필드: heroTitle, heroSub
- * - 미리보기 실시간 반영
- * - 상단 badge 는 SCHEDULES 기반 상태 표시
+ * - 저장 필드: heroTitle 만 (25자 이내)
+ * - 미리보기 실시간 반영 + 글자수 카운터
  *
- * 전역: saveSettings, loadSettings, updateTopbarBadge
+ * 전역: saveSettings, loadSettings, updateTopbarBadge, _refreshBannerPreview
  */
 
+var HERO_TITLE_MAX = 25;
+
 function saveSettings(){
-  var heroTitle = document.getElementById('setting-hero-title').value;
-  var heroSub   = document.getElementById('setting-hero-sub').value;
-  var settings  = { heroTitle: heroTitle, heroSub: heroSub };
+  var heroTitle = (document.getElementById('setting-hero-title').value || '').slice(0, HERO_TITLE_MAX);
+  var settings  = { heroTitle: heroTitle };
   localStorage.setItem('urefresh_settings', JSON.stringify(settings));
   updateTopbarBadge();
 
-  // 서버는 heroTitle 만 저장 (기간은 일정에서 계산됨)
   apiSaveSettings({ heroTitle: heroTitle }).catch(function(){});
 
   var msg = document.getElementById('setting-saved-msg');
@@ -26,31 +25,20 @@ function saveSettings(){
 function loadSettings(){
   try {
     var s = JSON.parse(localStorage.getItem('urefresh_settings'));
-    if(s){
-      if(s.heroTitle) document.getElementById('setting-hero-title').value = s.heroTitle;
-      if(s.heroSub)   document.getElementById('setting-hero-sub').value   = s.heroSub;
+    if(s && s.heroTitle){
+      document.getElementById('setting-hero-title').value = s.heroTitle;
     }
     _refreshBannerPreview();
-    _bindBannerPreview();
     updateTopbarBadge();
   } catch(e){}
 }
 
-// 입력 이벤트로 미리보기 실시간 반영
-function _bindBannerPreview(){
-  var t = document.getElementById('setting-hero-title');
-  var s = document.getElementById('setting-hero-sub');
-  if(t && !t._pvBound){ t.addEventListener('input', _refreshBannerPreview); t._pvBound = true; }
-  if(s && !s._pvBound){ s.addEventListener('input', _refreshBannerPreview); s._pvBound = true; }
-}
-
 function _refreshBannerPreview(){
   var t = (document.getElementById('setting-hero-title') || {}).value || '';
-  var s = (document.getElementById('setting-hero-sub')   || {}).value || '';
   var tEl = document.getElementById('banner-preview-title');
-  var sEl = document.getElementById('banner-preview-sub');
-  if(tEl) tEl.textContent = t || '휴양소 추첨';
-  if(sEl) sEl.textContent = s;
+  var cntEl = document.getElementById('setting-hero-title-count');
+  if(tEl)   tEl.textContent = t || '휴양소 추첨';
+  if(cntEl) cntEl.textContent = t.length + ' / ' + HERO_TITLE_MAX;
 }
 
 // 상단 배지: 일정(SCHEDULES)의 신청 기간 합집합 기반
