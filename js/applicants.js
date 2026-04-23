@@ -83,13 +83,17 @@ function renderApplicants(list){
     var infantBadge  = a.infant  ? '<span class="chip chip-blue">영아</span>'  : '<span style="color:var(--ink4);font-size:12px">—</span>';
     var toddlerBadge = a.toddler ? '<span class="chip chip-green">유아</span>' : '<span style="color:var(--ink4);font-size:12px">—</span>';
     var delBtn = '<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="deleteApplicantRow(\'' + _escAttr(a.eno) + '\', \'' + _escAttr(a.at) + '\')">삭제</button>';
+    // 동반가족: 값이 이미 "2명", "본인 포함 1명" 처럼 '명' 포함하면 그대로, 숫자면 '명' 붙임
+    var famStr = String(a.fam == null ? '' : a.fam).trim();
+    var famDisplay = (famStr && famStr.indexOf('명') === -1) ? (famStr + '명') : (famStr || '—');
+
     tr.innerHTML =
       '<td class="app-check" style="text-align:center"><input type="checkbox" ' + checked + ' data-key="' + _escAttr(key) + '" onchange="toggleApplicantSelection(this)" style="accent-color:var(--blue);cursor:pointer"></td>' +
       '<td style="font-family:monospace;font-size:12px">' + a.eno + '</td>' +
       '<td style="font-weight:600">' + a.name + '</td>' +
       '<td>' + _fmtDateOnly(a.date) + '</td>' +
       '<td>' + a.room + '</td>' +
-      '<td>' + a.fam + '명</td>' +
+      '<td>' + famDisplay + '</td>' +
       '<td>' + infantBadge  + '</td>' +
       '<td>' + toddlerBadge + '</td>' +
       '<td style="color:var(--ink3)">' + a.at + '</td>' +
