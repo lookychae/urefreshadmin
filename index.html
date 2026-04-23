@@ -190,11 +190,11 @@
           <div class="filter-chip" onclick="filterApplicants('selected',this)">당첨</div>
           <div class="filter-chip" onclick="filterApplicants('waitlisted',this)">대기</div>
           <div class="filter-chip" onclick="filterApplicants('cancelled',this)">취소</div>
-          <input class="search-input" placeholder="이름 또는 사번 검색" oninput="searchApplicants(this.value)">
           <button class="btn btn-danger" id="app-delete-selected-btn" onclick="deleteSelectedApplicants()" style="display:none">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
             선택 삭제 <span id="app-selected-count">0</span>건
           </button>
+          <input class="search-input" placeholder="이름 또는 사번 검색" oninput="searchApplicants(this.value)">
           <button class="btn btn-outline" onclick="exportExcel()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             엑셀 다운로드
