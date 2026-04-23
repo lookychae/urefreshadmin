@@ -7,7 +7,7 @@
  * 전역: saveSettings, loadSettings, updateTopbarBadge, _refreshBannerPreview
  */
 
-var HERO_TITLE_MAX = 25;
+var HERO_TITLE_MAX = 20;
 
 function saveSettings(){
   var heroTitle = (document.getElementById('setting-hero-title').value || '').slice(0, HERO_TITLE_MAX);
