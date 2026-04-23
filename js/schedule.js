@@ -53,6 +53,7 @@ function loadSchedulesFromSheet(){
       schSelected = {};
       renderSchedule();
       renderLottery();
+      if(typeof updateTopbarBadge === 'function') updateTopbarBadge();
     })
     .catch(function(e){
       console.warn('일정 불러오기 실패', e);
@@ -216,6 +217,7 @@ function saveSchedule(){
   renderSchedule();
   renderLottery();
   if(typeof renderDashboard === 'function') renderDashboard();
+  if(typeof updateTopbarBadge === 'function') updateTopbarBadge();
 }
 
 function addSchedule(){
@@ -229,6 +231,7 @@ function addSchedule(){
   renderSchedule();
   renderLottery();
   if(typeof renderDashboard === 'function') renderDashboard();
+  if(typeof updateTopbarBadge === 'function') updateTopbarBadge();
 }
 
 function deleteSchedule(i){
@@ -241,6 +244,7 @@ function deleteSchedule(i){
   renderSchedule();
   renderLottery();
   if(typeof renderDashboard === 'function') renderDashboard();
+  if(typeof updateTopbarBadge === 'function') updateTopbarBadge();
 }
 
 // ── 다중 선택 ──────────────────────────────────────────────
@@ -316,4 +320,5 @@ function deleteSelectedSchedules(){
   renderSchedule();
   renderLottery();
   if(typeof renderDashboard === 'function') renderDashboard();
+  if(typeof updateTopbarBadge === 'function') updateTopbarBadge();
 }

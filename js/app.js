@@ -17,7 +17,7 @@ function goPage(id, el){
     'pg-applicants': '신청자 명단',
     'pg-lottery':    '추첨 관리',
     'pg-notices':    '공지사항',
-    'pg-settings':   '신청 설정'
+    'pg-settings':   '배너 설정'
   };
   document.getElementById('topbar-title').textContent = titles[id] || '';
 }
