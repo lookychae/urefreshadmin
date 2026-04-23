@@ -191,6 +191,10 @@
           <div class="filter-chip" onclick="filterApplicants('waitlisted',this)">대기</div>
           <div class="filter-chip" onclick="filterApplicants('cancelled',this)">취소</div>
           <input class="search-input" placeholder="이름 또는 사번 검색" oninput="searchApplicants(this.value)">
+          <button class="btn btn-danger" id="app-delete-selected-btn" onclick="deleteSelectedApplicants()" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            선택 삭제 <span id="app-selected-count">0</span>건
+          </button>
           <button class="btn btn-outline" onclick="exportExcel()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             엑셀 다운로드
@@ -198,7 +202,15 @@
         </div>
         <div class="table-card">
           <table>
-            <thead><tr><th>사번</th><th>성명</th><th style="cursor:pointer;user-select:none" onclick="toggleApplicantSort('date')">이용일 <span id="sort-date-arrow" style="font-size:10px;margin-left:2px">▼</span></th><th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th><th>신청일시</th><th>상태</th><th style="text-align:center">대기순</th><th style="text-align:center">관리</th></tr></thead>
+            <thead><tr>
+              <th style="width:36px;text-align:center"><input type="checkbox" id="app-select-all" onchange="toggleSelectAllApplicants(this)" style="accent-color:var(--blue);cursor:pointer"></th>
+              <th>사번</th><th>성명</th>
+              <th style="cursor:pointer;user-select:none" onclick="toggleApplicantSort('date')">이용일 <span id="sort-date-arrow" style="font-size:10px;margin-left:2px">▼</span></th>
+              <th>룸타입</th><th>동반가족</th><th>영아동반</th><th>유아동반</th>
+              <th>신청일시</th><th>상태</th>
+              <th style="text-align:center">대기순</th>
+              <th style="text-align:center">관리</th>
+            </tr></thead>
             <tbody id="applicant-tbody"></tbody>
           </table>
         </div>

@@ -7,6 +7,7 @@
 var curFilter = 'all';
 var applicantSort = { field: 'date', dir: 'desc' };   // 기본: 이용일 내림차순
 var _lastFilteredApps = null;                         // 검색/필터 결과 캐시
+var applicantsSelected = {};                          // key: eno|at, value: true
 
 // ── 날짜 포맷: 시간 제거, 'YYYY년 M월 D일' ──
 function _fmtDateOnly(v){
@@ -66,6 +67,10 @@ function toggleApplicantSort(field){
 
 function _escAttr(v){ return String(v == null ? '' : v).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
+function _applicantKey(a){
+  return String(a.eno) + '|' + String(a.at);
+}
+
 function renderApplicants(list){
   _lastFilteredApps = list;
   var tb = document.getElementById('applicant-tbody');
@@ -73,10 +78,13 @@ function renderApplicants(list){
   var sorted = _sortApplicants(list);
   sorted.forEach(function(a){
     var tr = document.createElement('tr');
+    var key = _applicantKey(a);
+    var checked = applicantsSelected[key] ? 'checked' : '';
     var infantBadge  = a.infant  ? '<span class="chip chip-blue">영아</span>'  : '<span style="color:var(--ink4);font-size:12px">—</span>';
     var toddlerBadge = a.toddler ? '<span class="chip chip-green">유아</span>' : '<span style="color:var(--ink4);font-size:12px">—</span>';
     var delBtn = '<button class="btn btn-danger" style="font-size:11px;padding:4px 10px" onclick="deleteApplicantRow(\'' + _escAttr(a.eno) + '\', \'' + _escAttr(a.at) + '\')">삭제</button>';
     tr.innerHTML =
+      '<td class="app-check" style="text-align:center"><input type="checkbox" ' + checked + ' data-key="' + _escAttr(key) + '" onchange="toggleApplicantSelection(this)" style="accent-color:var(--blue);cursor:pointer"></td>' +
       '<td style="font-family:monospace;font-size:12px">' + a.eno + '</td>' +
       '<td style="font-weight:600">' + a.name + '</td>' +
       '<td>' + _fmtDateOnly(a.date) + '</td>' +
@@ -91,6 +99,7 @@ function renderApplicants(list){
     tb.appendChild(tr);
   });
   _applySortArrow();
+  _syncApplicantsSelectionUI();
 }
 
 function filterApplicants(f, el){
@@ -174,4 +183,95 @@ function deleteApplicantRow(eno, at){
     .catch(function(err){
       alert('네트워크 오류: ' + err.message);
     });
+}
+
+// ── 다중 선택 / 일괄 삭제 ────────────────────────────────
+function toggleApplicantSelection(input){
+  var key = input.getAttribute('data-key');
+  if(!key) return;
+  if(input.checked) applicantsSelected[key] = true;
+  else              delete applicantsSelected[key];
+  _syncApplicantsSelectionUI();
+}
+
+function toggleSelectAllApplicants(input){
+  var list = _lastFilteredApps || APPLICANTS;
+  if(input.checked){
+    // 현재 필터/검색 결과 전체 선택
+    applicantsSelected = {};
+    list.forEach(function(a){ applicantsSelected[_applicantKey(a)] = true; });
+  } else {
+    applicantsSelected = {};
+  }
+  // 표시중인 체크박스들 상태 동기화
+  var boxes = document.querySelectorAll('#applicant-tbody .app-check input[type=checkbox]');
+  for(var i = 0; i < boxes.length; i++){
+    var key = boxes[i].getAttribute('data-key');
+    boxes[i].checked = !!applicantsSelected[key];
+  }
+  _syncApplicantsSelectionUI();
+}
+
+function _syncApplicantsSelectionUI(){
+  var keys = Object.keys(applicantsSelected).filter(function(k){ return applicantsSelected[k]; });
+  var count = keys.length;
+
+  var btn = document.getElementById('app-delete-selected-btn');
+  var countEl = document.getElementById('app-selected-count');
+  if(btn) btn.style.display = count > 0 ? 'inline-flex' : 'none';
+  if(countEl) countEl.textContent = count;
+
+  var selAll = document.getElementById('app-select-all');
+  if(selAll){
+    var total = _lastFilteredApps ? _lastFilteredApps.length : 0;
+    if(total === 0){
+      selAll.checked = false; selAll.indeterminate = false;
+    } else if(count >= total){
+      selAll.checked = true;  selAll.indeterminate = false;
+    } else if(count === 0){
+      selAll.checked = false; selAll.indeterminate = false;
+    } else {
+      selAll.checked = false; selAll.indeterminate = true;
+    }
+  }
+}
+
+function deleteSelectedApplicants(){
+  var selected = [];
+  Object.keys(applicantsSelected).forEach(function(k){
+    if(!applicantsSelected[k]) return;
+    var parts = k.split('|');
+    selected.push({ key: k, eno: parts[0], at: parts.slice(1).join('|') });
+  });
+  if(!selected.length) return;
+  if(!confirm('선택한 ' + selected.length + '건의 신청자를 삭제하시겠습니까?\n삭제 후 되돌릴 수 없고 Google Sheets 에서도 제거됩니다.')) return;
+
+  var promises = selected.map(function(s){
+    return apiDeleteApplicant(s.eno, s.at)
+      .then(function(r){ return r.json(); })
+      .then(function(res){ return { item:s, ok: !!(res && res.ok), res:res }; })
+      .catch(function(err){ return { item:s, ok:false, err:err }; });
+  });
+
+  Promise.all(promises).then(function(results){
+    var okItems   = results.filter(function(r){ return r.ok; });
+    var failCount = results.length - okItems.length;
+
+    // 성공한 것만 APPLICANTS 에서 제거
+    okItems.forEach(function(r){
+      APPLICANTS = APPLICANTS.filter(function(a){
+        return !(String(a.eno) === String(r.item.eno) && String(a.at) === String(r.item.at));
+      });
+    });
+
+    applicantsSelected = {};
+    saveApplicantsData();
+    var list = curFilter === 'all' ? APPLICANTS : APPLICANTS.filter(function(a){ return a.status === curFilter; });
+    renderApplicants(list);
+    renderLottery();
+
+    if(failCount > 0){
+      alert('삭제 완료: ' + okItems.length + '건\n삭제 실패: ' + failCount + '건');
+    }
+  });
 }
