@@ -157,6 +157,7 @@ function loadApplicantsFromSheet(){
       var list = curFilter === 'all' ? APPLICANTS : APPLICANTS.filter(function(a){ return a.status === curFilter; });
       renderApplicants(list);
       renderLottery();
+      if(typeof renderDashboard === 'function') renderDashboard();
     })
     .catch(function(e){ console.warn('시트 불러오기 실패', e); });
 }
@@ -176,6 +177,7 @@ function deleteApplicantRow(eno, at){
         var list = curFilter === 'all' ? APPLICANTS : APPLICANTS.filter(function(a){ return a.status === curFilter; });
         renderApplicants(list);
         renderLottery();
+        if(typeof renderDashboard === 'function') renderDashboard();
       } else {
         alert('삭제 실패: ' + (res && res.error ? res.error : '서버 응답 오류'));
       }
@@ -269,6 +271,7 @@ function deleteSelectedApplicants(){
     var list = curFilter === 'all' ? APPLICANTS : APPLICANTS.filter(function(a){ return a.status === curFilter; });
     renderApplicants(list);
     renderLottery();
+    if(typeof renderDashboard === 'function') renderDashboard();
 
     if(failCount > 0){
       alert('삭제 완료: ' + okItems.length + '건\n삭제 실패: ' + failCount + '건');

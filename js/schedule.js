@@ -235,6 +235,7 @@ function saveSchedule(){
   closeModal('modal-schedule');
   renderSchedule();
   renderLottery();
+  if(typeof renderDashboard === 'function') renderDashboard();
 }
 
 function addSchedule(){
@@ -247,6 +248,7 @@ function addSchedule(){
   closeModal('modal-schedule');
   renderSchedule();
   renderLottery();
+  if(typeof renderDashboard === 'function') renderDashboard();
 }
 
 function deleteSchedule(i){
@@ -258,6 +260,7 @@ function deleteSchedule(i){
   schSelected = {};
   renderSchedule();
   renderLottery();
+  if(typeof renderDashboard === 'function') renderDashboard();
 }
 
 // ── 다중 선택 ──────────────────────────────────────────────
@@ -332,4 +335,5 @@ function deleteSelectedSchedules(){
   _syncSchedules();
   renderSchedule();
   renderLottery();
+  if(typeof renderDashboard === 'function') renderDashboard();
 }

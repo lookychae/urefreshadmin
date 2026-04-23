@@ -34,6 +34,7 @@ function renderAll(){
   // (localStorage 옛날 데이터가 잠깐 노출되던 현상 방지)
   renderApplicants(APPLICANTS);
   renderLottery();
+  renderDashboard();
   loadSettings();
   loadApplicantsFromSheet();
   loadNoticesFromSheet();
